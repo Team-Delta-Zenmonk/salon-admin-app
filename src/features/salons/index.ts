@@ -1,0 +1,10 @@
+export * from "./salons.slice";
+export { default as salonsReducer } from "./salons.slice";
+export * from "./list-salons/list-salons.action";
+export * from "./list-salons/list-salons.service";
+export * from "./create-salon/create-salon.action";
+export * from "./create-salon/create-salon.service";
+export * from "./update-salon-status/update-salon-status.action";
+export * from "./update-salon-status/update-salon-status.service";
+export * from "./update-salon-plan/update-salon-plan.action";
+export * from "./update-salon-plan/update-salon-plan.service";

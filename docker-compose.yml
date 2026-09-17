@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  app:
+    container_name: salon-admin-app
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - ${APP_FORWARD_PORT:-3003}:${PORT:-3003}
+    expose:
+      - ${PORT:-3003}
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/app
+    networks:
+      - salon_management_shared_network
+
+networks:
+  salon_management_shared_network:
+    name: salon_management_shared_network
+    external: true
+
+#docker network create salon_management_shared_network
