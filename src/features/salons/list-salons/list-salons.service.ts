@@ -38,14 +38,6 @@ export interface ListSalonsResponse {
 }
 
 export const listSalonsService = async (params: ListSalonsParams = {}): Promise<ListSalonsResponse> => {
-  const queryParams = new URLSearchParams();
-
-  if (params.page) queryParams.append("page", params.page.toString());
-  if (params.limit) queryParams.append("limit", params.limit.toString());
-  if (params.status) queryParams.append("status", params.status);
-  if (params.is_active !== undefined) queryParams.append("is_active", String(params.is_active));
-  if (params.search) queryParams.append("search", params.search);
-
-  const res = await axiosInstance.get<ListSalonsResponse>(`/admin/salons?${queryParams.toString()}`);
+  const res = await axiosInstance.get<ListSalonsResponse>("/admin/salons", { params });
   return res.data;
 };

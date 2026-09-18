@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import dayjs from "dayjs";
 import { Clock, Calendar, AlertCircle } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
@@ -7,6 +10,12 @@ import { Input } from "@/components/ui/input";
 import type { SalonItem } from "@/features/salons/list-salons/list-salons.service";
 import { useAppDispatch } from "@/store/hooks";
 import { updateSalonPlanAction } from "@/features/salons/update-salon-plan/update-salon-plan.action";
+
+const extendTrialSchema = z.object({
+  days: z.coerce.number().min(1, "Must be at least 1 day").max(365, "Maximum 365 days"),
+});
+
+type ExtendTrialForm = z.infer<typeof extendTrialSchema>;
 
 interface ExtendTrialModalProps {
   isOpen: boolean;
@@ -20,9 +29,31 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
   salon,
 }) => {
   const dispatch = useAppDispatch();
-  const [days, setDays] = useState<number>(7);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<ExtendTrialForm>({
+    resolver: zodResolver(extendTrialSchema),
+    defaultValues: {
+      days: 7,
+    },
+  });
+
+  const watchDays = watch("days");
+
+  useEffect(() => {
+    if (isOpen) {
+      reset();
+      setError(null);
+    }
+  }, [isOpen, reset]);
 
   if (!salon) return null;
 
@@ -30,15 +61,9 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
     salon.trial_ends_at && new Date(salon.trial_ends_at) > new Date()
       ? new Date(salon.trial_ends_at)
       : new Date();
-  const projectedDate = dayjs(currentBase).add(days || 0, "day").format("MMMM D, YYYY h:mm A");
+  const projectedDate = dayjs(currentBase).add(watchDays || 0, "day").format("MMMM D, YYYY h:mm A");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!days || days <= 0) {
-      setError("Please enter a valid number of days (> 0)");
-      return;
-    }
-
+  const onSubmit = async (data: ExtendTrialForm) => {
     try {
       setIsSubmitting(true);
       setError(null);
@@ -46,7 +71,7 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
         updateSalonPlanAction({
           uuid: salon.uuid,
           payload: {
-            extend_trial_days: Number(days),
+            extend_trial_days: Number(data.days),
             subscription_status: "trial",
           },
         })
@@ -68,7 +93,7 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
       description={`Grant supplementary trial days to "${salon.name}".`}
       maxWidth="md"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="rounded-xl border border-border bg-background p-4 space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Current Status:</span>
@@ -95,9 +120,9 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
               <button
                 key={preset}
                 type="button"
-                onClick={() => setDays(preset)}
+                onClick={() => setValue("days", preset, { shouldValidate: true })}
                 className={`flex items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-semibold transition-all cursor-pointer ${
-                  days === preset
+                  watchDays === preset
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border bg-card text-foreground hover:bg-muted"
                 }`}
@@ -114,10 +139,10 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
           min="1"
           max="365"
           label="Custom Additional Days"
-          value={days}
-          onChange={(e) => setDays(parseInt(e.target.value) || 0)}
+          {...register("days")}
           leftIcon={<Calendar className="h-4 w-4" />}
           helperText="Additive: days will be added on top of existing remaining time."
+          error={errors.days?.message}
         />
 
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 flex items-start gap-3">

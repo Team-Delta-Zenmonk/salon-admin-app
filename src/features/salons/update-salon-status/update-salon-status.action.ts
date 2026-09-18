@@ -1,4 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 import {
   updateSalonStatusService,
   type UpdateSalonStatusPayload,
@@ -14,11 +15,14 @@ export const updateSalonStatusAction = createAsyncThunk<
   try {
     const res = await updateSalonStatusService(uuid, payload);
     return { ...res, uuid };
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(
-      err?.response?.data?.error ||
-      err?.response?.data?.message ||
-      "Unable to update salon status"
-    );
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Unable to update salon status"
+      );
+    }
+    return thunkAPI.rejectWithValue("An unexpected error occurred");
   }
 });

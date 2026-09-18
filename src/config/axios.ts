@@ -28,7 +28,6 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem(ADMIN_TOKEN_KEY);
       localStorage.removeItem(ADMIN_USER_KEY);
       if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
-        window.dispatchEvent(new CustomEvent("zenmonk:admin-unauthorized"));
         window.location.href = "/login";
       }
     }

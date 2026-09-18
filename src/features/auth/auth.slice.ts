@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { loginAdminAction } from "./login/login.action";
 import type { AdminUser } from "./login/login.service";
 import { ADMIN_TOKEN_KEY, ADMIN_USER_KEY } from "@/config/axios";
@@ -46,11 +46,6 @@ export const authSlice = createSlice({
     clearAuthError(state) {
       state.error = null;
     },
-    setAdmin(state, { payload }: PayloadAction<AdminUser>) {
-      state.admin = payload;
-      state.isAuthenticated = true;
-      localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(payload));
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -73,5 +68,5 @@ export const authSlice = createSlice({
   },
 });
 
-export const { logout, clearAuthError, setAdmin } = authSlice.actions;
+export const { logout, clearAuthError } = authSlice.actions;
 export default authSlice.reducer;

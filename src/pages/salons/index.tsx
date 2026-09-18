@@ -17,7 +17,6 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   listSalonsAction,
   setFilters,
-  resetFilters,
   clearActionMessage,
   type SalonItem,
 } from "@/features/salons";
@@ -41,6 +40,7 @@ export const SalonsPage: React.FC = () => {
     totalPages,
     filters,
     isLoading,
+    error,
     actionMessage,
   } = useAppSelector((state) => state.salons);
 
@@ -192,6 +192,21 @@ export const SalonsPage: React.FC = () => {
                   <td colSpan={7} className="py-16 text-center text-muted-foreground">
                     <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-primary" />
                     Fetching salon tenants...
+                  </td>
+                </tr>
+              ) : error && salons.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-16 text-center">
+                    <div className="text-destructive font-semibold mb-2">{error}</div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => dispatch(listSalonsAction())}
+                      className="gap-1.5"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Retry
+                    </Button>
                   </td>
                 </tr>
               ) : salons.length === 0 ? (

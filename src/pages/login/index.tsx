@@ -28,8 +28,7 @@ export const LoginPage: React.FC = () => {
     try {
       await dispatch(loginAdminAction({ email: email.trim(), password })).unwrap();
       navigate("/dashboard");
-    } catch {
-    }
+    } catch { /* Error handled by Redux state */ }
   };
 
   return (
@@ -90,24 +89,26 @@ export const LoginPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-border">
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs">
-                <Sparkles className="h-4 w-4 text-primary shrink-0" />
-                <div>
-                  <p className="font-semibold text-foreground">Dev / Demo Credentials</p>
-                  <p className="text-[11px] text-muted-foreground font-mono">admin@zenmonk.com</p>
+          {import.meta.env.DEV && (
+            <div className="mt-6 pt-5 border-t border-border">
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs">
+                  <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                  <div>
+                    <p className="font-semibold text-foreground">Dev / Demo Credentials</p>
+                    <p className="text-[11px] text-muted-foreground font-mono">admin@zenmonk.com</p>
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleFillTestCredentials}
+                  className="rounded-lg bg-primary/10 hover:bg-primary/20 px-2.5 py-1 text-xs font-semibold text-primary border border-primary/20 transition-colors cursor-pointer"
+                >
+                  1-Click Fill
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleFillTestCredentials}
-                className="rounded-lg bg-primary/10 hover:bg-primary/20 px-2.5 py-1 text-xs font-semibold text-primary border border-primary/20 transition-colors cursor-pointer"
-              >
-                1-Click Fill
-              </button>
             </div>
-          </div>
+          )}
         </div>
 
         <p className="mt-6 text-center text-[11px] text-muted-foreground">

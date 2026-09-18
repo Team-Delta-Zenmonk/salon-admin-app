@@ -1,4 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 import {
   createSalonService,
   type CreateSalonPayload,
@@ -14,11 +15,14 @@ export const createSalonAction = createAsyncThunk<
   try {
     const res = await createSalonService(payload);
     return res;
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(
-      err?.response?.data?.error ||
-      err?.response?.data?.message ||
-      "Unable to provision salon"
-    );
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Unable to provision salon"
+      );
+    }
+    return thunkAPI.rejectWithValue("An unexpected error occurred");
   }
 });

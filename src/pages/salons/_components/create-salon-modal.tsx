@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Mail, Phone, Lock, Globe, AlertCircle, RefreshCw } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -7,7 +9,8 @@ import { useAppDispatch } from "@/store/hooks";
 import { createSalonAction } from "@/features/salons/create-salon/create-salon.action";
 import { listSalonsAction } from "@/features/salons/list-salons/list-salons.action";
 import { getStorefrontDomain } from "@/lib/domain";
-import { SUBSCRIPTION_PLAN, type SubscriptionPlan } from "@/common/enums/subscription.enum";
+import { SUBSCRIPTION_PLAN } from "@/common/enums/subscription.enum";
+import { createSalonSchema, type CreateSalonForm } from "./schema/create-salon.schema";
 
 interface CreateSalonModalProps {
   isOpen: boolean;
@@ -16,27 +19,49 @@ interface CreateSalonModalProps {
 
 export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onClose }) => {
   const dispatch = useAppDispatch();
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
   const [slugModified, setSlugModified] = useState(false);
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("Password@123");
-  const [trialDays, setTrialDays] = useState(15);
-  const [plan, setPlan] = useState<SubscriptionPlan>(SUBSCRIPTION_PLAN.TRIAL);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<CreateSalonForm>({
+    resolver: zodResolver(createSalonSchema),
+    defaultValues: {
+      name: "",
+      slug: "",
+      email: "",
+      phone: "",
+      password: "",
+      trial_days: 15,
+      plan: SUBSCRIPTION_PLAN.TRIAL,
+    },
+  });
+
+  const watchSlug = watch("slug");
+
+  const handleClose = () => {
+    reset();
+    setSlugModified(false);
+    setError(null);
+    onClose();
+  };
+
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    setName(val);
+    setValue("name", val, { shouldValidate: true });
     if (!slugModified) {
       const generated = val
         .toLowerCase()
         .replace(/[^a-z0-9]/g, "-")
         .replace(/-+/g, "-")
         .replace(/^-+|-+$/g, "");
-      setSlug(generated);
+      setValue("slug", generated, { shouldValidate: true });
     }
   };
 
@@ -46,40 +71,27 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
     for (let i = 0; i < 10; i++) {
       pass += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    setPassword(`${pass}!`);
+    setValue("password", `${pass}!`, { shouldValidate: true });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      setError("Salon Name, Email, and Password are required");
-      return;
-    }
-
+  const onSubmit = async (data: CreateSalonForm) => {
     try {
       setIsSubmitting(true);
       setError(null);
       await dispatch(
         createSalonAction({
-          name: name.trim(),
-          email: email.trim().toLowerCase(),
-          phone: phone.trim() || undefined,
-          password,
-          slug: slug.trim() || undefined,
-          trial_days: Number(trialDays),
-          subscription_plan: plan,
+          name: data.name.trim(),
+          email: data.email.trim().toLowerCase(),
+          phone: data.phone?.trim() || undefined,
+          password: data.password,
+          slug: data.slug?.trim() || undefined,
+          trial_days: Number(data.trial_days),
+          subscription_plan: data.plan,
         })
       ).unwrap();
 
       dispatch(listSalonsAction());
-
-      setName("");
-      setSlug("");
-      setSlugModified(false);
-      setEmail("");
-      setPhone("");
-      setPassword("Password@123");
-      onClose();
+      handleClose();
     } catch (err: any) {
       setError(typeof err === "string" ? err : "Failed to provision salon");
     } finally {
@@ -90,37 +102,38 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title="Provision New Salon Tenant"
       description="Register a new salon business and provision their SaaS workspace and storefront."
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="Salon Business Name *"
             placeholder="e.g. Aura Hair Studio"
-            value={name}
-            onChange={handleNameChange}
+            {...register("name", { onChange: handleNameChange })}
             leftIcon={<Building2 className="h-4 w-4" />}
-            required
+            error={errors.name?.message}
           />
 
           <div>
             <Input
               label="Storefront Subdomain Slug"
               placeholder="aura-hair-studio"
-              value={slug}
-              onChange={(e) => {
-                setSlugModified(true);
-                setSlug(
-                  e.target.value
-                    .toLowerCase()
-                    .replace(/[^a-z0-9-]/g, "")
-                );
-              }}
+              {...register("slug", {
+                onChange: (e) => {
+                  setSlugModified(true);
+                  setValue(
+                    "slug",
+                    e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                    { shouldValidate: true }
+                  );
+                },
+              })}
               leftIcon={<Globe className="h-4 w-4" />}
-              helperText={slug ? `Preview: ${slug}.${getStorefrontDomain()}` : "Auto-generated from name"}
+              helperText={watchSlug ? `Preview: ${watchSlug}.${getStorefrontDomain()}` : "Auto-generated from name"}
+              error={errors.slug?.message}
             />
           </div>
         </div>
@@ -130,19 +143,18 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
             label="Owner Email Address *"
             type="email"
             placeholder="owner@aurastudio.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            {...register("email")}
             leftIcon={<Mail className="h-4 w-4" />}
-            required
+            error={errors.email?.message}
           />
 
           <Input
             label="Phone Number"
             type="tel"
             placeholder="+1 (555) 019-2834"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            {...register("phone")}
             leftIcon={<Phone className="h-4 w-4" />}
+            error={errors.phone?.message}
           />
         </div>
 
@@ -162,10 +174,9 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
           </div>
           <Input
             type="text"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            {...register("password")}
             leftIcon={<Lock className="h-4 w-4" />}
-            required
+            error={errors.password?.message}
           />
         </div>
 
@@ -175,14 +186,16 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
               Initial Plan Tier
             </label>
             <select
-              value={plan}
-              onChange={(e) => setPlan(e.target.value as SubscriptionPlan)}
+              {...register("plan")}
               className="w-full h-10 rounded-lg border border-border bg-input-bg px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none cursor-pointer"
             >
               <option value={SUBSCRIPTION_PLAN.TRIAL}>Free Trial (15 Days)</option>
               <option value={SUBSCRIPTION_PLAN.MONTHLY}>Monthly Plan (₹2,499/mo)</option>
               <option value={SUBSCRIPTION_PLAN.YEARLY}>Yearly Plan (₹24,990/yr)</option>
             </select>
+            {errors.plan?.message && (
+              <p className="mt-1 text-xs text-destructive">{errors.plan.message}</p>
+            )}
           </div>
 
           <Input
@@ -190,8 +203,8 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
             type="number"
             min="1"
             max="90"
-            value={trialDays}
-            onChange={(e) => setTrialDays(parseInt(e.target.value) || 15)}
+            {...register("trial_days")}
+            error={errors.trial_days?.message}
           />
         </div>
 
@@ -203,7 +216,7 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
         )}
 
         <div className="flex items-center justify-end gap-3 pt-3">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+          <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button type="submit" isLoading={isSubmitting}>

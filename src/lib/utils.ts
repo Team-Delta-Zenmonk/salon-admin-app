@@ -36,11 +36,17 @@ export function getDaysRemaining(targetDate: string | Date | null | undefined): 
   const now = new Date().getTime();
   const target = new Date(targetDate).getTime();
   const diffMs = target - now;
-  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-  if (days < 0) {
-    return { days: Math.abs(days), isExpired: true, text: `Expired ${Math.abs(days)}d ago` };
+  if (diffMs < 0) {
+    const elapsedDays = Math.floor(Math.abs(diffMs) / (1000 * 60 * 60 * 24));
+    return {
+      days: elapsedDays,
+      isExpired: true,
+      text: elapsedDays === 0 ? "Expired earlier today" : `Expired ${elapsedDays}d ago`,
+    };
   }
+
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   if (days === 0) {
     return { days: 0, isExpired: false, text: "Expires today" };
   }

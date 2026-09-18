@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { ProtectedRoute } from "./protected-route";
 import { PublicRoute } from "./public-route";
 import { AdminLayout } from "@/layouts/admin-layout";
@@ -8,12 +8,12 @@ import { DashboardPage } from "@/pages/dashboard";
 import { SalonsPage } from "@/pages/salons";
 import { CreateSalonModal } from "@/pages/salons/_components/create-salon-modal";
 
-const AdminLayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AdminLayoutWrapper: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   return (
     <AdminLayout onOpenCreateSalon={() => setCreateModalOpen(true)}>
-      {children}
+      <Outlet />
       <CreateSalonModal
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
@@ -31,22 +31,10 @@ export const AppRoutes: React.FC = () => {
         </Route>
 
         <Route element={<ProtectedRoute />}>
-          <Route
-            path="/dashboard"
-            element={
-              <AdminLayoutWrapper>
-                <DashboardPage />
-              </AdminLayoutWrapper>
-            }
-          />
-          <Route
-            path="/salons"
-            element={
-              <AdminLayoutWrapper>
-                <SalonsPage />
-              </AdminLayoutWrapper>
-            }
-          />
+          <Route element={<AdminLayoutWrapper />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/salons" element={<SalonsPage />} />
+          </Route>
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

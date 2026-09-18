@@ -13,7 +13,6 @@ export interface SalonsState {
   totalPages: number;
   filters: ListSalonsParams;
   isLoading: boolean;
-  isMutating: boolean;
   error: string | null;
   actionMessage: string | null;
 }
@@ -32,7 +31,6 @@ const initialState: SalonsState = {
     search: undefined,
   },
   isLoading: false,
-  isMutating: false,
   error: null,
   actionMessage: null,
 };
@@ -75,25 +73,20 @@ export const salonsSlice = createSlice({
 
     builder
       .addCase(createSalonAction.pending, (state) => {
-        state.isMutating = true;
         state.error = null;
       })
       .addCase(createSalonAction.fulfilled, (state, { payload }) => {
-        state.isMutating = false;
         state.actionMessage = `Salon "${payload.salon.name}" successfully provisioned!`;
       })
       .addCase(createSalonAction.rejected, (state, action) => {
-        state.isMutating = false;
         state.error = (action.payload as string) || "Failed to create salon";
       });
 
     builder
       .addCase(updateSalonStatusAction.pending, (state) => {
-        state.isMutating = true;
         state.error = null;
       })
       .addCase(updateSalonStatusAction.fulfilled, (state, { payload }) => {
-        state.isMutating = false;
         state.actionMessage = payload.message || "Salon status updated";
         const index = state.data.findIndex((s) => s.uuid === payload.uuid);
         if (index !== -1) {
@@ -101,17 +94,14 @@ export const salonsSlice = createSlice({
         }
       })
       .addCase(updateSalonStatusAction.rejected, (state, action) => {
-        state.isMutating = false;
         state.error = (action.payload as string) || "Failed to update salon status";
       });
 
     builder
       .addCase(updateSalonPlanAction.pending, (state) => {
-        state.isMutating = true;
         state.error = null;
       })
       .addCase(updateSalonPlanAction.fulfilled, (state, { payload }) => {
-        state.isMutating = false;
         state.actionMessage = payload.message || "Salon subscription plan updated";
         const index = state.data.findIndex((s) => s.uuid === payload.uuid);
         if (index !== -1) {
@@ -119,7 +109,6 @@ export const salonsSlice = createSlice({
         }
       })
       .addCase(updateSalonPlanAction.rejected, (state, action) => {
-        state.isMutating = false;
         state.error = (action.payload as string) || "Failed to update salon plan";
       });
   },

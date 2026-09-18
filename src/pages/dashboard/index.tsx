@@ -13,7 +13,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { listSalonsAction, clearActionMessage, type SalonItem } from "@/features/salons";
+import { listSalonsAction, resetFilters, clearActionMessage, type SalonItem } from "@/features/salons";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,7 @@ import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS } from "@/common/enums/subscript
 
 export const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { data: salons, total, isLoading, actionMessage } = useAppSelector(
+  const { data: salons, total, isLoading, error, actionMessage } = useAppSelector(
     (state) => state.salons
   );
 
@@ -39,6 +39,8 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(listSalonsAction({ page: 1, limit: 100 }));
+    dispatch(resetFilters());
+    dispatch(listSalonsAction({ page: 1, limit: 100, search: undefined, status: undefined, is_active: undefined }));
   }, [dispatch]);
 
   const totalSalons = total || salons.length;
@@ -207,6 +209,21 @@ export const DashboardPage: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-muted-foreground">
                     Loading platform tenants...
+                  </td>
+                </tr>
+              ) : error && salons.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center">
+                    <div className="text-destructive font-semibold mb-2">{error}</div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => dispatch(listSalonsAction({ page: 1, limit: 100 }))}
+                      className="gap-1.5"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Retry
+                    </Button>
                   </td>
                 </tr>
               ) : salons.length === 0 ? (

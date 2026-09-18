@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import dayjs from "dayjs";
 import { Zap, Calendar, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
@@ -7,6 +10,13 @@ import type { SalonItem } from "@/features/salons/list-salons/list-salons.servic
 import { useAppDispatch } from "@/store/hooks";
 import { updateSalonPlanAction } from "@/features/salons/update-salon-plan/update-salon-plan.action";
 import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS, type SubscriptionPlan } from "@/common/enums/subscription.enum";
+
+const overridePlanSchema = z.object({
+  selectedPlan: z.enum([SUBSCRIPTION_PLAN.MONTHLY, SUBSCRIPTION_PLAN.YEARLY] as const),
+  durationDays: z.coerce.number().min(1, "Minimum 1 day"),
+});
+
+type OverridePlanForm = z.infer<typeof overridePlanSchema>;
 
 interface OverridePlanModalProps {
   isOpen: boolean;
@@ -20,17 +30,46 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   salon,
 }) => {
   const dispatch = useAppDispatch();
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>(
-    salon?.subscription_plan === SUBSCRIPTION_PLAN.YEARLY ? SUBSCRIPTION_PLAN.YEARLY : SUBSCRIPTION_PLAN.MONTHLY
-  );
-  const [durationDays, setDurationDays] = useState<number>(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const defaultPlan = salon?.subscription_plan === SUBSCRIPTION_PLAN.YEARLY 
+    ? SUBSCRIPTION_PLAN.YEARLY 
+    : SUBSCRIPTION_PLAN.MONTHLY;
+
+  const {
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<OverridePlanForm>({
+    resolver: zodResolver(overridePlanSchema),
+    defaultValues: {
+      selectedPlan: defaultPlan,
+      durationDays: 30,
+    },
+  });
+
+  const watchSelectedPlan = watch("selectedPlan");
+  const watchDurationDays = watch("durationDays");
+
+  useEffect(() => {
+    if (isOpen && salon) {
+      reset({
+        selectedPlan: salon.subscription_plan === SUBSCRIPTION_PLAN.YEARLY 
+          ? SUBSCRIPTION_PLAN.YEARLY 
+          : SUBSCRIPTION_PLAN.MONTHLY,
+        durationDays: 30,
+      });
+      setError(null);
+    }
+  }, [isOpen, reset, salon]);
 
   if (!salon) return null;
 
   const planTiers: {
-    id: SubscriptionPlan;
+    id: typeof SUBSCRIPTION_PLAN.MONTHLY | typeof SUBSCRIPTION_PLAN.YEARLY;
     name: string;
     price: string;
     features: string;
@@ -65,23 +104,27 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
     ? new Date(salon.subscription_expires_at!)
     : new Date();
 
-  const projectedDate = dayjs(currentBase).add(durationDays, "day").format("MMMM D, YYYY");
+  const projectedDate = dayjs(currentBase).add(watchDurationDays, "day").format("MMMM D, YYYY");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: OverridePlanForm) => {
     try {
       setIsSubmitting(true);
       setError(null);
 
-      const payload: any = {
-        subscription_plan: selectedPlan,
+      const payload: {
+        subscription_plan: SubscriptionPlan;
+        subscription_status: typeof SUBSCRIPTION_STATUS.ACTIVE;
+        extend_subscription_days?: number;
+        duration_days?: number;
+      } = {
+        subscription_plan: data.selectedPlan,
         subscription_status: SUBSCRIPTION_STATUS.ACTIVE,
       };
 
       if (isCurrentlyActive) {
-        payload.extend_subscription_days = durationDays;
+        payload.extend_subscription_days = data.durationDays;
       } else {
-        payload.duration_days = durationDays;
+        payload.duration_days = data.durationDays;
       }
 
       await dispatch(
@@ -107,7 +150,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
       description={`Grant or adjust subscription entitlement for "${salon.name}".`}
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="rounded-xl border border-border bg-background p-4 flex items-center justify-between text-xs">
           <div>
             <span className="text-muted-foreground block">Current Plan:</span>
@@ -129,11 +172,11 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {planTiers.map((tier) => {
-              const isSelected = selectedPlan === tier.id;
+              const isSelected = watchSelectedPlan === tier.id;
               return (
                 <div
                   key={tier.id}
-                  onClick={() => setSelectedPlan(tier.id)}
+                  onClick={() => setValue("selectedPlan", tier.id, { shouldValidate: true })}
                   className={`cursor-pointer rounded-xl border p-3.5 transition-all relative ${
                     isSelected
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
@@ -152,6 +195,9 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
               );
             })}
           </div>
+          {errors.selectedPlan?.message && (
+            <p className="mt-1 text-xs text-destructive">{errors.selectedPlan.message}</p>
+          )}
         </div>
 
         <div>
@@ -163,9 +209,9 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
               <button
                 key={opt.days}
                 type="button"
-                onClick={() => setDurationDays(opt.days)}
+                onClick={() => setValue("durationDays", opt.days, { shouldValidate: true })}
                 className={`flex items-center justify-center gap-1.5 rounded-lg border py-2 px-2 text-xs font-semibold transition-all cursor-pointer ${
-                  durationDays === opt.days
+                  watchDurationDays === opt.days
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border bg-card text-foreground hover:bg-muted"
                 }`}
@@ -175,6 +221,9 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
               </button>
             ))}
           </div>
+          {errors.durationDays?.message && (
+            <p className="mt-1 text-xs text-destructive">{errors.durationDays.message}</p>
+          )}
         </div>
 
         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 flex items-center justify-between">
@@ -187,7 +236,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
               <p className="text-[11px] text-muted-foreground">
                 {isCurrentlyActive ? (
                   <>
-                    +<strong>{durationDays} days</strong> will stack onto existing plan until{" "}
+                    +<strong>{watchDurationDays} days</strong> will stack onto existing plan until{" "}
                     <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{projectedDate}</span>
                   </>
                 ) : (
