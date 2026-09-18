@@ -215,11 +215,21 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3 pt-3">
-          <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3 pt-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
             Cancel
           </Button>
-          <Button type="submit" isLoading={isSubmitting}>
+          <Button
+            type="submit"
+            isLoading={isSubmitting}
+            className="w-full sm:w-auto"
+          >
             Provision Salon
           </Button>
         </div>

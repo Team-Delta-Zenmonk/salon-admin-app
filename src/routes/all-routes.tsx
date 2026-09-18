@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { ProtectedRoute } from "./protected-route";
 import { PublicRoute } from "./public-route";
@@ -6,18 +6,11 @@ import { AdminLayout } from "@/layouts/admin-layout";
 import { LoginPage } from "@/pages/login";
 import { DashboardPage } from "@/pages/dashboard";
 import { SalonsPage } from "@/pages/salons";
-import { CreateSalonModal } from "@/pages/salons/_components/create-salon-modal";
 
 const AdminLayoutWrapper: React.FC = () => {
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-
   return (
-    <AdminLayout onOpenCreateSalon={() => setCreateModalOpen(true)}>
+    <AdminLayout>
       <Outlet />
-      <CreateSalonModal
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-      />
     </AdminLayout>
   );
 };

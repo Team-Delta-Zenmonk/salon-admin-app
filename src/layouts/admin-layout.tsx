@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   Menu,
   X,
-  PlusCircle,
   Activity,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -19,10 +18,9 @@ import { getStorefrontUrl } from "@/lib/domain";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  onOpenCreateSalon?: () => void;
 }
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, onOpenCreateSalon }) => {
+export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -197,17 +195,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, onOpenCreate
             <Badge variant="info" size="sm" withDot>
               {admin?.role?.toUpperCase() || "SUPER ADMIN"}
             </Badge>
-
-            {onOpenCreateSalon && (
-              <Button
-                size="sm"
-                onClick={onOpenCreateSalon}
-                className="hidden sm:flex items-center gap-1.5"
-              >
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span>New Tenant</span>
-              </Button>
-            )}
 
             <Button
               variant="outline"

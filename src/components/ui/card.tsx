@@ -41,11 +41,11 @@ export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement
 export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
   ...props
-}) => <div className={cn("p-5 pt-0 sm:p-6 sm:pt-0", className)} {...props} />;
+}) => <div className={cn("p-6 pt-0", className)} {...props} />;
 
 export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
   ...props
 }) => (
-  <div className={cn("flex items-center p-5 pt-0 sm:p-6 sm:pt-0", className)} {...props} />
+  <div className={cn("flex items-center p-6 pt-0", className)} {...props} />
 );

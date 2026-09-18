@@ -117,8 +117,14 @@ export const ToggleStatusModal: React.FC<ToggleStatusModalProps> = ({
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
             Cancel
           </Button>
           <Button
@@ -126,6 +132,7 @@ export const ToggleStatusModal: React.FC<ToggleStatusModalProps> = ({
             variant={willSuspend ? "destructive" : "default"}
             onClick={handleConfirm}
             isLoading={isSubmitting}
+            className="w-full sm:w-auto"
           >
             {willSuspend ? "Confirm Suspension" : "Confirm Reactivation"}
           </Button>

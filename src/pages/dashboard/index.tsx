@@ -8,7 +8,6 @@ import {
   ShieldAlert,
   ArrowUpRight,
   PlusCircle,
-  ExternalLink,
   CheckCircle2,
   RefreshCw,
 } from "lucide-react";
@@ -16,9 +15,8 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { listSalonsAction, resetFilters, clearActionMessage, type SalonItem } from "@/features/salons";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { formatCurrency, getDaysRemaining, formatDate } from "@/lib/utils";
-import { getStorefrontUrl, getSubdomainDisplay } from "@/lib/domain";
+import { formatCurrency } from "@/lib/utils";
+import { SalonsTable } from "@/pages/salons/_components/salons-table";
 import { ExtendTrialModal } from "@/pages/salons/_components/extend-trial-modal";
 import { OverridePlanModal } from "@/pages/salons/_components/override-plan-modal";
 import { ToggleStatusModal } from "@/pages/salons/_components/toggle-status-modal";
@@ -38,7 +36,6 @@ export const DashboardPage: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(listSalonsAction({ page: 1, limit: 100 }));
     dispatch(resetFilters());
     dispatch(listSalonsAction({ page: 1, limit: 100, search: undefined, status: undefined, is_active: undefined }));
   }, [dispatch]);
@@ -192,169 +189,26 @@ export const DashboardPage: React.FC = () => {
           </Link>
         </CardHeader>
 
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-xs text-foreground">
-            <thead className="bg-muted/40 text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border">
-              <tr>
-                <th className="py-3 px-4 sm:px-6">Tenant Name & Domain</th>
-                <th className="py-3 px-4">Contact</th>
-                <th className="py-3 px-4">Entitlement Plan</th>
-                <th className="py-3 px-4">Status & Countdown</th>
-                <th className="py-3 px-4">Registered</th>
-                <th className="py-3 px-4 sm:px-6 text-right">Quick Governance</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border font-sans">
-              {isLoading && salons.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                    Loading platform tenants...
-                  </td>
-                </tr>
-              ) : error && salons.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center">
-                    <div className="text-destructive font-semibold mb-2">{error}</div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => dispatch(listSalonsAction({ page: 1, limit: 100 }))}
-                      className="gap-1.5"
-                    >
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Retry
-                    </Button>
-                  </td>
-                </tr>
-              ) : salons.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                    No salons found. Click "Provision Salon" to onboard the first tenant.
-                  </td>
-                </tr>
-              ) : (
-                salons.slice(0, 10).map((salon) => {
-                  const targetDate =
-                    salon.subscription_status === "trial"
-                      ? salon.trial_ends_at
-                      : salon.subscription_expires_at;
-                  const countdown = getDaysRemaining(targetDate);
-                  const isSuspended = !salon.is_active || salon.subscription_status === "suspended";
-
-                  return (
-                    <tr
-                      key={salon.uuid}
-                      className="hover:bg-muted/30 transition-colors group"
-                    >
-                      <td className="py-3.5 px-4 sm:px-6">
-                        <div className="font-bold text-foreground text-sm">
-                          {salon.name}
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="font-mono text-[11px] text-primary">
-                            {getSubdomainDisplay(salon.slug)}
-                          </span>
-                          <a
-                            href={getStorefrontUrl(salon.slug)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-primary"
-                            title="Open Storefront"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4 text-foreground">
-                        <div>{salon.email}</div>
-                        {salon.phone && (
-                          <div className="text-[11px] text-muted-foreground font-mono">
-                            {salon.phone}
-                          </div>
-                        )}
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <span className="capitalize font-semibold text-foreground bg-muted px-2 py-0.5 rounded border border-border">
-                          {salon.subscription_plan}
-                        </span>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={
-                              isSuspended
-                                ? "suspended"
-                                : salon.subscription_status === "active"
-                                ? "active"
-                                : salon.subscription_status === "trial"
-                                ? "trial"
-                                : "expired"
-                            }
-                            withDot
-                          >
-                            {isSuspended ? "Suspended" : salon.subscription_status}
-                          </Badge>
-                          {!isSuspended && targetDate && (
-                            <span
-                              className={`text-[11px] font-mono ${
-                                countdown.isExpired ? "text-destructive font-semibold" : "text-muted-foreground"
-                              }`}
-                            >
-                              ({countdown.text})
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4 text-muted-foreground text-[11px]">
-                        {formatDate(salon.created_at)}
-                      </td>
-
-                      <td className="py-3.5 px-4 sm:px-6 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            variant="secondary"
-                            size="xs"
-                            onClick={() => {
-                              setSelectedSalon(salon);
-                              setTrialModalOpen(true);
-                            }}
-                          >
-                            +Trial
-                          </Button>
-
-                          <Button
-                            variant="secondary"
-                            size="xs"
-                            onClick={() => {
-                              setSelectedSalon(salon);
-                              setPlanModalOpen(true);
-                            }}
-                          >
-                            Plan
-                          </Button>
-
-                          <Button
-                            variant={isSuspended ? "default" : "outline"}
-                            size="xs"
-                            onClick={() => {
-                              setSelectedSalon(salon);
-                              setStatusModalOpen(true);
-                            }}
-                          >
-                            {isSuspended ? "Reactivate" : "Suspend"}
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+        <CardContent className="p-0">
+          <SalonsTable
+            salons={salons.slice(0, 10)}
+            isLoading={isLoading}
+            error={error}
+            emptyMessage='No salons found. Click "Provision Salon" to onboard the first tenant.'
+            onRetry={() => dispatch(listSalonsAction({ page: 1, limit: 100 }))}
+            onExtendTrial={(salon) => {
+              setSelectedSalon(salon);
+              setTrialModalOpen(true);
+            }}
+            onOverridePlan={(salon) => {
+              setSelectedSalon(salon);
+              setPlanModalOpen(true);
+            }}
+            onToggleStatus={(salon) => {
+              setSelectedSalon(salon);
+              setStatusModalOpen(true);
+            }}
+          />
         </CardContent>
       </Card>
 

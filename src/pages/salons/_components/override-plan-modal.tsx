@@ -204,7 +204,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
           <label className="block text-xs font-semibold tracking-wide text-foreground mb-2">
             Entitlement Duration
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {durationOptions.map((opt) => (
               <button
                 key={opt.days}
@@ -257,11 +257,22 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
             Cancel
           </Button>
-          <Button type="submit" variant="default" isLoading={isSubmitting}>
+          <Button
+            type="submit"
+            variant="default"
+            isLoading={isSubmitting}
+            className="w-full sm:w-auto"
+          >
             Apply Plan & Activate
           </Button>
         </div>
