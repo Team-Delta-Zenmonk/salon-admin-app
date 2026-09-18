@@ -28,6 +28,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, onOpenCreate
   const dispatch = useAppDispatch();
   const { admin } = useAppSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const appName = import.meta.env.VITE_APP_NAME || "Veloura";
 
   const handleLogout = () => {
     dispatch(logout());
@@ -63,12 +64,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, onOpenCreate
       >
         <div className="flex h-16 items-center justify-between border-b border-border px-6">
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-              <ShieldCheck className="h-5 w-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 overflow-hidden shadow-sm border border-border/40">
+              <img
+                src="/management-icon.png"
+                alt="Management Logo"
+                className="h-full w-full object-cover"
+              />
             </div>
             <div className="flex flex-col">
               <span className="text-base font-bold tracking-tight text-foreground flex items-center gap-1.5">
-                ZenMonk
+                {appName}
                 <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary border border-primary/20">
                   OPS
                 </span>
@@ -149,10 +154,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, onOpenCreate
               </div>
               <div className="truncate">
                 <p className="truncate text-xs font-semibold text-foreground">
-                  {admin?.name || "ZenMonk Admin"}
+                  {admin?.name || `${appName} Admin`}
                 </p>
                 <p className="truncate text-[11px] text-muted-foreground font-mono">
-                  {admin?.email || "admin@zenmonk.com"}
+                  {admin?.email || `admin@${appName.toLowerCase()}.com`}
                 </p>
               </div>
             </div>
@@ -180,7 +185,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, onOpenCreate
             </button>
 
             <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">ZenMonk Cloud</span>
+              <span className="font-medium text-foreground">{appName} Cloud</span>
               <span>/</span>
               <span className="capitalize text-muted-foreground">
                 {location.pathname.replace("/", "") || "Dashboard"}

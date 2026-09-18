@@ -1,7 +1,8 @@
 import axios from "axios";
 
-export const ADMIN_TOKEN_KEY = "zenmonk_admin_token";
-export const ADMIN_USER_KEY = "zenmonk_admin_user";
+const appName = import.meta.env.VITE_APP_NAME || "Veloura";
+export const ADMIN_TOKEN_KEY = `${appName.toLowerCase()}_admin_token`;
+export const ADMIN_USER_KEY = `${appName.toLowerCase()}_admin_user`;
 
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8080",

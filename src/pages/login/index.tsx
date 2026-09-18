@@ -11,12 +11,13 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.auth);
+  const appName = import.meta.env.VITE_APP_NAME || "Veloura";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleFillTestCredentials = () => {
-    setEmail("admin@zenmonk.com");
+    setEmail(`admin@${appName}.com`);
     setPassword("Password@123");
     dispatch(clearAuthError());
   };
@@ -39,7 +40,7 @@ export const LoginPage: React.FC = () => {
             <ShieldCheck className="h-8 w-8" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-            ZenMonk Cloud Console
+            {appName} Cloud Console
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-muted-foreground">
             Internal Operations & Multi-Tenant Super Admin
@@ -61,7 +62,7 @@ export const LoginPage: React.FC = () => {
             <Input
               label="Operator Email"
               type="email"
-              placeholder="admin@zenmonk.com"
+              placeholder={`admin@${appName}.com`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               leftIcon={<Mail className="h-4 w-4" />}
@@ -89,6 +90,24 @@ export const LoginPage: React.FC = () => {
             </Button>
           </form>
 
+          <div className="mt-6 pt-5 border-t border-border">
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs">
+                <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                <div>
+                  <p className="font-semibold text-foreground">Dev / Demo Credentials</p>
+                  <p className="text-[11px] text-muted-foreground font-mono">{`admin@${appName}.com`}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleFillTestCredentials}
+                className="rounded-lg bg-primary/10 hover:bg-primary/20 px-2.5 py-1 text-xs font-semibold text-primary border border-primary/20 transition-colors cursor-pointer"
+              >
+                1-Click Fill
+              </button>
+            </div>
+          </div>
           {import.meta.env.DEV && (
             <div className="mt-6 pt-5 border-t border-border">
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center justify-between">
@@ -96,7 +115,7 @@ export const LoginPage: React.FC = () => {
                   <Sparkles className="h-4 w-4 text-primary shrink-0" />
                   <div>
                     <p className="font-semibold text-foreground">Dev / Demo Credentials</p>
-                    <p className="text-[11px] text-muted-foreground font-mono">admin@zenmonk.com</p>
+                    <p className="text-[11px] text-muted-foreground font-mono">{`admin@${appName}.com`}</p>
                   </div>
                 </div>
                 <button
