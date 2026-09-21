@@ -116,11 +116,11 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-foreground mb-1">
-            Price / Amount (INR)
+          <label className="block text-xs font-semibold text-foreground mb-1 flex items-center gap-1.5">
+            <span>Price / Amount (INR)</span>
           </label>
           <div className="relative">
-            <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <IndianRupee className="absolute left-3 top-[50%] z-1 h-4 w-4 text-muted-foreground translate-y-[-50%]" />
             <Input
               type="number"
               step="1"
