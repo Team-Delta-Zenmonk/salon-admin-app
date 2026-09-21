@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Mail, Phone, Lock, Globe, AlertCircle, RefreshCw } from "lucide-react";
+import { Building2, Mail, Phone, Lock, Globe, AlertCircle, RefreshCw, CheckCircle2, Sparkles, Calendar, Zap } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { createSalonAction } from "@/features/salons/create-salon/create-salon.action";
 import { listSalonsAction } from "@/features/salons/list-salons/list-salons.action";
+import { fetchSubscriptionPlans } from "@/features/plans/plans.slice";
 import { getStorefrontDomain } from "@/lib/domain";
 import { SUBSCRIPTION_PLAN } from "@/common/enums/subscription.enum";
 import { createSalonSchema, type CreateSalonForm } from "./schema/create-salon.schema";
@@ -19,6 +20,7 @@ interface CreateSalonModalProps {
 
 export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onClose }) => {
   const dispatch = useAppDispatch();
+  const { plans: backendPlans } = useAppSelector((state) => state.plans);
   const [slugModified, setSlugModified] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +46,28 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
   });
 
   const watchSlug = watch("slug");
+  const watchPlan = watch("plan");
+
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(fetchSubscriptionPlans());
+    }
+  }, [isOpen, dispatch]);
+
+  const iconMap: Record<string, React.ReactNode> = {
+    trial: <Sparkles className="h-4 w-4 text-amber-500" />,
+    monthly: <Calendar className="h-4 w-4 text-blue-500" />,
+    yearly: <Zap className="h-4 w-4 text-emerald-500" />,
+  };
+
+  const planOptions = backendPlans.map((p) => ({
+    id: p.id,
+    name: p.name,
+    price: p.formatted_price === "Free" ? "Free" : `${p.formatted_price} ${p.billing_cycle}`,
+    description: p.description,
+    badge: p.badge,
+    icon: iconMap[p.id] || <Zap className="h-4 w-4 text-primary" />,
+  }));
 
   const handleClose = () => {
     reset();
@@ -106,8 +130,29 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
       title="Provision New Salon Tenant"
       description="Register a new salon business and provision their SaaS workspace and storefront."
       maxWidth="lg"
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="create-salon-form"
+            isLoading={isSubmitting}
+            className="w-full sm:w-auto"
+          >
+            Provision Salon
+          </Button>
+        </>
+      }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form id="create-salon-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="Salon Business Name *"
@@ -180,59 +225,77 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          <div>
-            <label className="block text-xs font-semibold tracking-wide text-foreground mb-1.5">
-              Initial Plan Tier
-            </label>
-            <select
-              {...register("plan")}
-              className="w-full h-10 rounded-lg border border-border bg-input-bg px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none cursor-pointer"
-            >
-              <option value={SUBSCRIPTION_PLAN.TRIAL}>Free Trial (15 Days)</option>
-              <option value={SUBSCRIPTION_PLAN.MONTHLY}>Monthly Plan (₹2,499/mo)</option>
-              <option value={SUBSCRIPTION_PLAN.YEARLY}>Yearly Plan (₹24,990/yr)</option>
-            </select>
-            {errors.plan?.message && (
-              <p className="mt-1 text-xs text-destructive">{errors.plan.message}</p>
-            )}
-          </div>
+        <div className="space-y-2 pt-1">
+          <label className="block text-xs font-semibold tracking-wide text-foreground">
+            Initial Plan Tier *
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            {planOptions.map((plan) => {
+              const isSelected = watchPlan === plan.id;
+              return (
+                <div
+                  key={plan.id}
+                  onClick={() => setValue("plan", plan.id, { shouldValidate: true })}
+                  className={`cursor-pointer rounded-xl border p-3 transition-all relative flex flex-col justify-between ${
+                    isSelected
+                      ? "border-primary bg-primary/5 ring-1 ring-primary shadow-xs"
+                      : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <div className="flex items-center gap-1.5">
+                        {plan.icon}
+                        <span className="text-xs font-bold text-foreground">{plan.name}</span>
+                      </div>
+                      {isSelected && (
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-xs font-bold text-primary">{plan.price}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-snug">
+                      {plan.description}
+                    </p>
+                  </div>
 
+                  {plan.badge && (
+                    <div className="mt-2.5">
+                      <span className={`inline-block px-1.5 py-0.5 text-[10px] font-medium rounded-md ${
+                        isSelected
+                          ? "bg-primary/15 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      }`}>
+                        {plan.badge}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {errors.plan?.message && (
+            <p className="mt-1 text-xs text-destructive">{errors.plan.message}</p>
+          )}
+        </div>
+
+        <div className="pt-1">
           <Input
-            label="Trial Period (Days)"
+            label="Initial Trial Period (Days) *"
             type="number"
             min="1"
             max="90"
             {...register("trial_days")}
+            helperText="Trial period granted regardless of selected plan tier."
             error={errors.trial_days?.message}
           />
         </div>
 
         {error && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive flex items-center gap-2">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive flex items-center gap-2 transition-opacity">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
-
-        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3 pt-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            isLoading={isSubmitting}
-            className="w-full sm:w-auto"
-          >
-            Provision Salon
-          </Button>
-        </div>
       </form>
     </Modal>
   );

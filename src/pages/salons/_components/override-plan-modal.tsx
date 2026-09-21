@@ -7,8 +7,9 @@ import { Zap, Calendar, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import type { SalonItem } from "@/features/salons/list-salons/list-salons.service";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateSalonPlanAction } from "@/features/salons/update-salon-plan/update-salon-plan.action";
+import { fetchSubscriptionPlans } from "@/features/plans/plans.slice";
 import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS, type SubscriptionPlan } from "@/common/enums/subscription.enum";
 
 const overridePlanSchema = z.object({
@@ -30,6 +31,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   salon,
 }) => {
   const dispatch = useAppDispatch();
+  const { plans: allBackendPlans } = useAppSelector((state) => state.plans);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,30 +65,20 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
         durationDays: 30,
       });
       setError(null);
+      dispatch(fetchSubscriptionPlans());
     }
-  }, [isOpen, reset, salon]);
+  }, [isOpen, reset, salon, dispatch]);
+
+  const backendPlans = allBackendPlans.filter((p) => p.id !== SUBSCRIPTION_PLAN.TRIAL);
 
   if (!salon) return null;
 
-  const planTiers: {
-    id: typeof SUBSCRIPTION_PLAN.MONTHLY | typeof SUBSCRIPTION_PLAN.YEARLY;
-    name: string;
-    price: string;
-    features: string;
-  }[] = [
-    {
-      id: SUBSCRIPTION_PLAN.MONTHLY,
-      name: "Monthly Plan",
-      price: "₹2,499 / mo",
-      features: "Unlimited staff & bookings, POS, analytics, SMS alerts",
-    },
-    {
-      id: SUBSCRIPTION_PLAN.YEARLY,
-      name: "Yearly Plan",
-      price: "₹24,990 / yr",
-      features: "Save ~20% (2 Months Free), priority onboarding & dedicated support",
-    },
-  ];
+  const planTiers = backendPlans.map((p) => ({
+    id: p.id as typeof SUBSCRIPTION_PLAN.MONTHLY | typeof SUBSCRIPTION_PLAN.YEARLY,
+    name: p.name,
+    price: `${p.formatted_price} ${p.billing_cycle}`,
+    features: p.description,
+  }));
 
   const durationOptions = [
     { label: "1 Month (+30d)", days: 30 },

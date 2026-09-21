@@ -14,6 +14,9 @@ export const updateSalonStatusAction = createAsyncThunk<
 >(updateSalonStatusType, async ({ uuid, payload }, thunkAPI) => {
   try {
     const res = await updateSalonStatusService(uuid, payload);
+    setTimeout(() => {
+      thunkAPI.dispatch({ type: "salons/clearActionMessage" });
+    }, 5000);
     return { ...res, uuid };
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {

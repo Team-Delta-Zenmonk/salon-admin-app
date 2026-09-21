@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   Activity,
+  CreditCard,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logout } from "@/features/auth/auth.slice";
@@ -43,6 +44,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       name: "Salons Directory",
       path: "/salons",
       icon: Building2,
+    },
+    {
+      name: "Plan Pricing",
+      path: "/plans",
+      icon: CreditCard,
     },
   ];
 

@@ -14,6 +14,9 @@ export const createSalonAction = createAsyncThunk<
 >(createSalonType, async (payload, thunkAPI) => {
   try {
     const res = await createSalonService(payload);
+    setTimeout(() => {
+      thunkAPI.dispatch({ type: "salons/clearActionMessage" });
+    }, 5000);
     return res;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {

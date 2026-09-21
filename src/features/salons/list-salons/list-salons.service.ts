@@ -37,7 +37,42 @@ export interface ListSalonsResponse {
   };
 }
 
+export interface BackendPlan {
+  id: SubscriptionPlan;
+  name: string;
+  amount: number;
+  formatted_price: string;
+  currency: string;
+  billing_cycle: string;
+  badge?: string;
+  description: string;
+}
+
 export const listSalonsService = async (params: ListSalonsParams = {}): Promise<ListSalonsResponse> => {
   const res = await axiosInstance.get<ListSalonsResponse>("/admin/salons", { params });
   return res.data;
+};
+
+export const getSubscriptionPlansService = async (): Promise<BackendPlan[]> => {
+  const res = await axiosInstance.get<{ plans: BackendPlan[] }>("/admin/plans");
+  return res.data.plans;
+};
+
+export interface UpdatePlanPayload {
+  amount?: number;
+  name?: string;
+  description?: string;
+  badge?: string;
+  billing_cycle?: string;
+}
+
+export const updateSubscriptionPlanService = async (
+  code: string,
+  payload: UpdatePlanPayload
+): Promise<BackendPlan> => {
+  const res = await axiosInstance.patch<{ message: string; plan: BackendPlan }>(
+    `/admin/plans/${code}`,
+    payload
+  );
+  return res.data.plan;
 };
