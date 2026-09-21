@@ -6,6 +6,20 @@ export const SUBSCRIPTION_PLAN = {
 
 export type SubscriptionPlan = (typeof SUBSCRIPTION_PLAN)[keyof typeof SUBSCRIPTION_PLAN];
 
+export const DISCOUNT_TYPE = {
+  MANUAL: "manual",
+  PERCENTAGE: "percentage",
+} as const;
+
+export type DiscountType = (typeof DISCOUNT_TYPE)[keyof typeof DISCOUNT_TYPE];
+
+export type PaidSubscriptionPlan = Exclude<SubscriptionPlan, typeof SUBSCRIPTION_PLAN.TRIAL>;
+
+export const PLAN_BASE_PRICES: Record<PaidSubscriptionPlan, number> = {
+  [SUBSCRIPTION_PLAN.MONTHLY]: 2500,
+  [SUBSCRIPTION_PLAN.YEARLY]: 24990,
+};
+
 export const SUBSCRIPTION_STATUS = {
   TRIAL: "trial",
   ACTIVE: "active",

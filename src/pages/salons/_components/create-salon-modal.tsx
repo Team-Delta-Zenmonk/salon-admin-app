@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Mail, Phone, Lock, Globe, AlertCircle, RefreshCw, CheckCircle2, Sparkles, Calendar, Zap } from "lucide-react";
+import {
+  Building2,
+  Mail,
+  Phone,
+  Lock,
+  Globe,
+  AlertCircle,
+  RefreshCw,
+  CheckCircle2,
+  Sparkles,
+  Calendar,
+  Zap,
+  Tag,
+  Percent,
+  IndianRupee,
+} from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +25,11 @@ import { createSalonAction } from "@/features/salons/create-salon/create-salon.a
 import { listSalonsAction } from "@/features/salons/list-salons/list-salons.action";
 import { fetchSubscriptionPlans } from "@/features/plans/plans.slice";
 import { getStorefrontDomain } from "@/lib/domain";
-import { SUBSCRIPTION_PLAN } from "@/common/enums/subscription.enum";
+import {
+  SUBSCRIPTION_PLAN,
+  DISCOUNT_TYPE,
+  PLAN_BASE_PRICES,
+} from "@/common/enums/subscription.enum";
 import { createSalonSchema, type CreateSalonForm } from "./schema/create-salon.schema";
 
 interface CreateSalonModalProps {
@@ -30,10 +49,12 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
     handleSubmit,
     watch,
     setValue,
+    trigger,
     reset,
     formState: { errors },
   } = useForm<CreateSalonForm>({
     resolver: zodResolver(createSalonSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       slug: "",
@@ -42,11 +63,15 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
       password: "",
       trial_days: 15,
       plan: SUBSCRIPTION_PLAN.TRIAL,
+      discount_type: DISCOUNT_TYPE.MANUAL,
+      discount_value: undefined,
     },
   });
 
   const watchSlug = watch("slug");
   const watchPlan = watch("plan");
+  const watchDiscountType = watch("discount_type");
+  const watchDiscountValue = watch("discount_value");
 
   useEffect(() => {
     if (isOpen) {
@@ -69,8 +94,43 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
     icon: iconMap[p.id] || <Zap className="h-4 w-4 text-primary" />,
   }));
 
+  const isPaidPlan = watchPlan !== SUBSCRIPTION_PLAN.TRIAL;
+
+  const currentBasePrice =
+    backendPlans.find((p) => p.id === watchPlan)?.amount ||
+    (isPaidPlan ? PLAN_BASE_PRICES[watchPlan] : 0) ||
+    0;
+
+  const numericDiscountValue =
+    watchDiscountValue !== undefined && !isNaN(Number(watchDiscountValue))
+      ? Number(watchDiscountValue)
+      : 0;
+
+  let discountDeduction = 0;
+  if (isPaidPlan && numericDiscountValue > 0) {
+    if (watchDiscountType === DISCOUNT_TYPE.PERCENTAGE) {
+      discountDeduction = Math.min(
+        Math.round((currentBasePrice * numericDiscountValue) / 100),
+        currentBasePrice
+      );
+    } else {
+      discountDeduction = Math.min(numericDiscountValue, currentBasePrice);
+    }
+  }
+  const netPayable = Math.max(0, currentBasePrice - discountDeduction);
+
   const handleClose = () => {
-    reset();
+    reset({
+      name: "",
+      slug: "",
+      email: "",
+      phone: "",
+      password: "",
+      trial_days: 15,
+      plan: SUBSCRIPTION_PLAN.TRIAL,
+      discount_type: DISCOUNT_TYPE.MANUAL,
+      discount_value: undefined,
+    });
     setSlugModified(false);
     setError(null);
     onClose();
@@ -102,6 +162,19 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
     try {
       setIsSubmitting(true);
       setError(null);
+
+      const isPaid = data.plan !== SUBSCRIPTION_PLAN.TRIAL;
+      const baseAmount = isPaid ? currentBasePrice : undefined;
+      const hasValidDiscount =
+        isPaid && data.discount_value !== undefined && Number(data.discount_value) > 0;
+
+      const discountDetails = hasValidDiscount
+        ? {
+            type: data.discount_type,
+            value: Number(data.discount_value),
+          }
+        : null;
+
       await dispatch(
         createSalonAction({
           name: data.name.trim(),
@@ -111,6 +184,8 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
           slug: data.slug?.trim() || undefined,
           trial_days: Number(data.trial_days),
           subscription_plan: data.plan,
+          amount: baseAmount,
+          discount_details: discountDetails,
         })
       ).unwrap();
 
@@ -152,7 +227,7 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
         </>
       }
     >
-      <form id="create-salon-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form id="create-salon-form" onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="Salon Business Name *"
@@ -235,7 +310,10 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
               return (
                 <div
                   key={plan.id}
-                  onClick={() => setValue("plan", plan.id, { shouldValidate: true })}
+                  onClick={() => {
+                    setValue("plan", plan.id, { shouldValidate: true });
+                    trigger("discount_value");
+                  }}
                   className={`cursor-pointer rounded-xl border p-3 transition-all relative flex flex-col justify-between ${
                     isSelected
                       ? "border-primary bg-primary/5 ring-1 ring-primary shadow-xs"
@@ -260,11 +338,13 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
 
                   {plan.badge && (
                     <div className="mt-2.5">
-                      <span className={`inline-block px-1.5 py-0.5 text-[10px] font-medium rounded-md ${
-                        isSelected
-                          ? "bg-primary/15 text-primary"
-                          : "bg-muted text-muted-foreground"
-                      }`}>
+                      <span
+                        className={`inline-block px-1.5 py-0.5 text-[10px] font-medium rounded-md ${
+                          isSelected
+                            ? "bg-primary/15 text-primary"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
                         {plan.badge}
                       </span>
                     </div>
@@ -278,12 +358,136 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
           )}
         </div>
 
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 transition-all">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-primary" />
+              <div>
+                <span className="text-xs font-bold text-foreground">
+                  Subscription Discount
+                </span>
+                <p className="text-[11px] text-muted-foreground">
+                  Apply a negotiated discount to the tenant&apos;s initial subscription invoice
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {!isPaidPlan ? (
+            <div className="rounded-lg border border-dashed border-border bg-muted/20 px-3 py-2.5 text-xs text-muted-foreground flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span>
+                Free Trial tier has no invoice charge. To configure a discount, select <strong>Monthly</strong> or <strong>Yearly</strong> plan above.
+              </span>
+            </div>
+          ) : (
+            <div className="space-y-3 pt-1 border-t border-border">
+              <input type="hidden" {...register("discount_type")} />
+              <div>
+                <label className="block text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  Select Discount Mode (Choose One)
+                </label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-muted/40 rounded-lg border border-border">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setValue("discount_type", DISCOUNT_TYPE.MANUAL, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      });
+                      trigger(["discount_type", "discount_value"]);
+                    }}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                      watchDiscountType === DISCOUNT_TYPE.MANUAL
+                        ? "bg-background text-foreground shadow-xs border border-border"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <IndianRupee className="h-3.5 w-3.5 text-primary" />
+                    Manual Amount (₹)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setValue("discount_type", DISCOUNT_TYPE.PERCENTAGE, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      });
+                      trigger(["discount_type", "discount_value"]);
+                    }}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                      watchDiscountType === DISCOUNT_TYPE.PERCENTAGE
+                        ? "bg-background text-foreground shadow-xs border border-border"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Percent className="h-3.5 w-3.5 text-primary" />
+                    Percentage (%)
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <Input
+                  label={
+                    watchDiscountType === DISCOUNT_TYPE.MANUAL
+                      ? `Discount Amount (₹) — Max: ₹${currentBasePrice.toLocaleString()}`
+                      : "Discount Percentage (%) — Max: 100%"
+                  }
+                  type="number"
+                  placeholder={
+                    watchDiscountType === DISCOUNT_TYPE.MANUAL ? "e.g. 1000" : "e.g. 20"
+                  }
+                  {...register("discount_value")}
+                  leftIcon={
+                    watchDiscountType === DISCOUNT_TYPE.MANUAL ? (
+                      <IndianRupee className="h-4 w-4" />
+                    ) : (
+                      <Percent className="h-4 w-4" />
+                    )
+                  }
+                  helperText={
+                    watchDiscountType === DISCOUNT_TYPE.MANUAL
+                      ? `Cannot exceed selected plan price of ₹${currentBasePrice.toLocaleString()}`
+                      : "Cannot exceed 100%"
+                  }
+                  error={errors.discount_value?.message}
+                />
+              </div>
+
+              {/* Dynamic Calculation Breakdown */}
+              {numericDiscountValue > 0 && (
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs space-y-1.5">
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Base Plan Price:</span>
+                    <span className="font-semibold text-foreground">
+                      ₹{currentBasePrice.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+                    <span>Discount Deducted:</span>
+                    <span className="font-semibold">
+                      -₹{discountDeduction.toLocaleString()}
+                      {watchDiscountType === DISCOUNT_TYPE.PERCENTAGE ? ` (${numericDiscountValue}%)` : ""}
+                    </span>
+                  </div>
+                  <div className="border-t border-border/60 pt-1.5 flex items-center justify-between font-bold text-foreground">
+                    <span>Final Payable Invoice:</span>
+                    <span className="text-primary text-sm font-extrabold">
+                      ₹{netPayable.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="pt-1">
           <Input
             label="Initial Trial Period (Days) *"
             type="number"
-            min="1"
-            max="90"
             {...register("trial_days")}
             helperText="Trial period granted regardless of selected plan tier."
             error={errors.trial_days?.message}
