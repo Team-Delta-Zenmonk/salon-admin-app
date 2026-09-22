@@ -79,13 +79,13 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
         <table className="w-full text-left text-xs text-foreground">
           <thead className="bg-muted/40 text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border">
             <tr>
-              <th className="py-3.5 px-4 sm:px-6 min-w-[200px]">Tenant & Subdomain</th>
-              <th className="py-3.5 px-4 min-w-[180px]">Contact Info</th>
-              <th className="py-3.5 px-4 min-w-[110px]">Entitlement Tier</th>
-              <th className="py-3.5 px-4 min-w-[130px]">Subscription Status</th>
-              <th className="py-3.5 px-4 min-w-[140px]">Countdown / Expiry</th>
-              <th className="py-3.5 px-4 min-w-[100px]">Created</th>
-              <th className="py-3.5 px-4 sm:px-6 text-right min-w-[200px]">Administrative Actions</th>
+              <th className="py-2.5 px-4 sm:px-6">Tenant & Subdomain</th>
+              <th className="py-2.5 px-4">Contact Info</th>
+              <th className="py-2.5 px-4">Tier</th>
+              <th className="py-2.5 px-4">Status</th>
+              <th className="py-2.5 px-4">Expiry</th>
+              <th className="py-2.5 px-4">Created</th>
+              <th className="py-2.5 px-4 sm:px-6 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border font-sans">
@@ -97,7 +97,7 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                   key={salon.uuid}
                   className="hover:bg-muted/30 transition-colors group"
                 >
-                  <td className="py-4 px-4 sm:px-6 max-w-[220px]">
+                  <td className="py-2.5 px-4 sm:px-6 max-w-[200px]">
                     <EllipsisCell
                       value={salon.name}
                       className="font-bold text-foreground text-sm"
@@ -119,30 +119,32 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                     </div>
                   </td>
 
-                  <td className="py-4 px-4 max-w-[200px]">
-                    <EllipsisCell
-                      value={salon.email}
-                      className="text-foreground font-medium"
-                    />
-                    {salon.phone && (
+                  <td className="py-2.5 px-4 max-w-[180px]">
+                    <div className="flex flex-col min-w-0">
                       <EllipsisCell
-                        value={salon.phone}
-                        className="text-[11px] text-muted-foreground font-mono mt-0.5"
+                        value={salon.email}
+                        className="text-foreground font-medium"
                       />
-                    )}
+                      {salon.phone && (
+                        <EllipsisCell
+                          value={salon.phone}
+                          className="text-[11px] text-muted-foreground font-mono mt-0.5"
+                        />
+                      )}
+                    </div>
                   </td>
 
-                  <td className="py-4 px-4">
+                  <td className="py-2.5 px-4">
                     <span className="capitalize font-semibold text-foreground bg-muted px-2 py-0.5 rounded border border-border">
                       {salon.subscription_plan}
                     </span>
                   </td>
 
-                  <td className="py-4 px-4">
+                  <td className="py-2.5 px-4">
                     <SalonStatusBadge salon={salon} />
                   </td>
 
-                  <td className="py-4 px-4">
+                  <td className="py-2.5 px-4">
                     {isSuspended ? (
                       <span className="text-muted-foreground font-mono">Access Locked</span>
                     ) : targetDate ? (
@@ -163,11 +165,11 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                     )}
                   </td>
 
-                  <td className="py-4 px-4 text-muted-foreground text-[11px]">
+                  <td className="py-2.5 px-4 text-muted-foreground text-[11px]">
                     {formatDate(salon.created_at)}
                   </td>
 
-                  <td className="py-4 px-4 sm:px-6 text-right">
+                  <td className="py-2.5 px-4 sm:px-6 text-right">
                     <SalonActions
                       salon={salon}
                       onExtendTrial={onExtendTrial}

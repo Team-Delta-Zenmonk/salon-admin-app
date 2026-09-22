@@ -25,45 +25,45 @@ export const SalonActions: React.FC<SalonActionsProps> = ({
   const isSuspended = isSalonSuspended(salon);
 
   return (
-    <div className={cn("flex items-center gap-1.5", className)}>
+    <div className={cn("flex items-center gap-1.5 flex-wrap sm:flex-nowrap", className)}>
       <Button
         variant="secondary"
         size={size}
-        className="w-full justify-center text-[11px] px-1 sm:w-auto"
+        className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
         title="Extend Trial"
         onClick={() => onExtendTrial(salon)}
       >
-        <Calendar className="h-3 w-3 mr-1 text-amber-600 dark:text-amber-400 shrink-0" />
-        +Trial
+        <Calendar className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400 shrink-0" />
+        <span>+Trial</span>
       </Button>
 
       <Button
         variant="secondary"
         size={size}
-        className="w-full justify-center text-[11px] px-1 sm:w-auto"
+        className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
         title="Override Entitlement Plan"
         onClick={() => onOverridePlan(salon)}
       >
-        <Zap className="h-3 w-3 mr-1 text-primary shrink-0" />
-        Plan
+        <Zap className="h-2.5 w-2.5 text-primary shrink-0" />
+        <span>Plan</span>
       </Button>
 
       <Button
         variant={isSuspended ? "default" : "outline"}
         size={size}
-        className="w-full justify-center text-[11px] px-1 sm:w-auto"
+        className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
         title={isSuspended ? "Reactivate Salon" : "Suspend Salon"}
         onClick={() => onToggleStatus(salon)}
       >
         {isSuspended ? (
           <>
-            <ShieldCheck className="h-3 w-3 mr-1 text-primary-foreground shrink-0" />
-            Reactivate
+            <ShieldCheck className="h-2.5 w-2.5 text-primary-foreground shrink-0" />
+            <span>Reactivate</span>
           </>
         ) : (
           <>
-            <ShieldBan className="h-3 w-3 mr-1 text-destructive shrink-0" />
-            Suspend
+            <ShieldBan className="h-2.5 w-2.5 text-destructive shrink-0" />
+            <span>Suspend</span>
           </>
         )}
       </Button>

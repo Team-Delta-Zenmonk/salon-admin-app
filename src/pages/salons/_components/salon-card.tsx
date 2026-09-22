@@ -68,7 +68,7 @@ export const SalonCard: React.FC<SalonCardProps> = ({
           <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
             Contact
           </span>
-          <div className="text-foreground font-medium text-[11px] flex items-center gap-1 min-w-0">
+          <div className="text-foreground font-medium text-[11px] flex items-center gap-1.5 min-w-0">
             <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
             <EllipsisCell
               value={salon.email}
@@ -76,11 +76,11 @@ export const SalonCard: React.FC<SalonCardProps> = ({
             />
           </div>
           {salon.phone && (
-            <div className="text-muted-foreground font-mono text-[10px] flex items-center gap-1 min-w-0">
-              <Phone className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+            <div className="text-muted-foreground text-[10px] flex items-center gap-1.5 min-w-0">
+              <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
               <EllipsisCell
                 value={salon.phone}
-                className="text-muted-foreground font-mono text-[10px]"
+                className="text-muted-foreground font-mono text-[10px] pt-1"
               />
             </div>
           )}
@@ -97,11 +97,10 @@ export const SalonCard: React.FC<SalonCardProps> = ({
           ) : targetDate ? (
             <div>
               <p
-                className={`font-semibold font-mono text-[11px] ${
-                  countdown.isExpired
+                className={`font-semibold font-mono text-[11px] ${countdown.isExpired
                     ? "text-destructive"
                     : "text-emerald-600 dark:text-emerald-400"
-                }`}
+                  }`}
               >
                 {countdown.text}
               </p>
