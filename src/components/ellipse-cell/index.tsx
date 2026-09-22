@@ -34,10 +34,11 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
     if (!element) return;
 
     const checkOverflow = () => {
+      const target = (element.querySelector("input, textarea") as HTMLElement) || element;
       setIsOverflowing(
         isCharTruncated ||
-          element.scrollWidth > element.clientWidth ||
-          element.scrollHeight > element.clientHeight
+          target.scrollWidth > target.clientWidth ||
+          target.scrollHeight > target.clientHeight
       );
     };
 
@@ -51,9 +52,12 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
     };
   }, [value, maxChars, isCharTruncated]);
 
+  const touchStartPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
   const updatePosition = () => {
     if (elementRef.current) {
-      const rect = elementRef.current.getBoundingClientRect();
+      const target = (elementRef.current.querySelector("input, textarea") as HTMLElement) || elementRef.current;
+      const rect = target.getBoundingClientRect();
       setTooltipPos({
         top: Math.max(10, rect.top - 36),
         left: Math.max(20, Math.min(window.innerWidth - 20, rect.left + rect.width / 2)),
@@ -61,8 +65,23 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
     }
   };
 
+  const checkCurrentlyOverflowing = (): boolean => {
+    const element = elementRef.current;
+    if (!element) return isOverflowing;
+    const target = (element.querySelector("input, textarea") as HTMLElement) || element;
+    const overflowing =
+      isCharTruncated ||
+      target.scrollWidth > target.clientWidth ||
+      target.scrollHeight > target.clientHeight;
+    if (overflowing !== isOverflowing) {
+      setIsOverflowing(overflowing);
+    }
+    return overflowing;
+  };
+
   const handleMouseEnter = (e: React.MouseEvent<HTMLSpanElement>) => {
-    if (isOverflowing || forceTooltip || isCharTruncated) {
+    const overflowing = checkCurrentlyOverflowing();
+    if (overflowing || forceTooltip || isCharTruncated) {
       updatePosition();
       setShowTooltip(true);
     }
@@ -76,12 +95,14 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLSpanElement>) => {
-    if (isOverflowing || forceTooltip || isCharTruncated) {
+    const overflowing = checkCurrentlyOverflowing();
+    if (overflowing || forceTooltip || isCharTruncated) {
       updatePosition();
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
+        updatePosition();
         setShowTooltip(true);
-      }, 250);
+      }, 200);
     }
     props.onMouseDown?.(e);
   };
@@ -91,19 +112,40 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    setShowTooltip(false);
     props.onMouseUp?.(e);
   };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLSpanElement>) => {
-    if (isOverflowing || forceTooltip || isCharTruncated) {
+    const touch = e.touches[0];
+    if (touch) {
+      touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    }
+    const overflowing = checkCurrentlyOverflowing();
+    if (overflowing || forceTooltip || isCharTruncated) {
       updatePosition();
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
+        updatePosition();
         setShowTooltip(true);
-      }, 250);
+      }, 200);
     }
     props.onTouchStart?.(e);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLSpanElement>) => {
+    const touch = e.touches[0];
+    if (touch) {
+      const dx = Math.abs(touch.clientX - touchStartPos.current.x);
+      const dy = Math.abs(touch.clientY - touchStartPos.current.y);
+      if (dx > 10 || dy > 10) {
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
+        setShowTooltip(false);
+      }
+    }
+    props.onTouchMove?.(e);
   };
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLSpanElement>) => {
@@ -111,7 +153,7 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    setShowTooltip(false);
+    setTimeout(() => setShowTooltip(false), 1500);
     props.onTouchEnd?.(e);
   };
 
@@ -141,7 +183,7 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
         onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        onTouchMove={handleTouchEnd}
+        onTouchMove={handleTouchMove}
         onTouchCancel={handleTouchEnd}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
@@ -149,8 +191,10 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
           if (showTooltip) e.preventDefault();
         }}
         className={cn(
-          "overflow-hidden text-ellipsis min-w-0 max-w-full pointer-events-auto [&_*]:pointer-events-auto select-none",
-          maxLines === 1 ? "inline-block whitespace-nowrap truncate" : "line-clamp-none",
+          children
+            ? "min-w-0 max-w-full pointer-events-auto [&_*]:pointer-events-auto"
+            : "overflow-hidden text-ellipsis min-w-0 max-w-full pointer-events-auto [&_*]:pointer-events-auto select-none",
+          maxLines === 1 && !children ? "inline-block whitespace-nowrap truncate" : "",
           className
         )}
         style={

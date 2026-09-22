@@ -49,13 +49,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               {leftIcon}
             </div>
           )}
-          {valString ? (
-            <EllipsisCell value={valString} className="w-full min-w-0 block">
-              {inputElement}
-            </EllipsisCell>
-          ) : (
-            inputElement
-          )}
+          <EllipsisCell value={valString} className="w-full min-w-0 block">
+            {inputElement}
+          </EllipsisCell>
           {rightIcon && (
             <div className="absolute right-3 flex items-center text-muted-foreground z-10">
               {rightIcon}
