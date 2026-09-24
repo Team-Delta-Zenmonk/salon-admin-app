@@ -13,9 +13,8 @@ export const getStorefrontUrl = (slug?: string): string => {
   const baseDomain = getStorefrontDomain();
 
   // if (isDev) {
-  //   return slug ? `${devBaseUrl}/?salon=${slug}` : devBaseUrl;
+    return slug ? `${devBaseUrl}/?salon=${slug}` : devBaseUrl;
   // }
-  return devBaseUrl;
   // return slug ? `https://${slug}.${baseDomain}` : `https://${baseDomain}`;
 };
 
