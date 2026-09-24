@@ -36,7 +36,7 @@ export const LoginPage: React.FC = () => {
     <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md mb-4">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-md mb-4">
             <ShieldCheck className="h-8 w-8" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
@@ -47,7 +47,7 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+        <div className="rounded-lg border border-border bg-card p-6 sm:p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs text-destructive flex items-start gap-2.5">

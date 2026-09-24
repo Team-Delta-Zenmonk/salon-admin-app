@@ -8,6 +8,8 @@ import { DashboardPage } from "@/pages/dashboard";
 import { SalonsPage } from "@/pages/salons";
 import { PlansPage } from "@/pages/plans";
 
+import { NotFoundPage } from "@/pages/not-found";
+
 const AdminLayoutWrapper: React.FC = () => {
   return (
     <AdminLayout>
@@ -33,8 +35,9 @@ export const AppRoutes: React.FC = () => {
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
 };
+

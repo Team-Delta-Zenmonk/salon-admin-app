@@ -59,7 +59,7 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby="modal-title"
         className={cn(
-          "relative z-10 w-full max-h-[calc(100dvh-1.75rem)] sm:max-h-[calc(100dvh-3.5rem)] flex flex-col rounded-2xl border border-border bg-card text-foreground shadow-2xl transition-all my-auto",
+          "relative z-10 w-full max-h-[calc(100dvh-1.75rem)] sm:max-h-[calc(100dvh-3.5rem)] flex flex-col rounded-lg border border-border bg-card text-foreground shadow-2xl transition-all my-auto",
           maxWidthClasses
         )}
       >
