@@ -12,11 +12,11 @@ export const getStorefrontUrl = (slug?: string): string => {
   const devBaseUrl = import.meta.env.VITE_STOREFRONT_URL || "http://localhost:3001";
   const baseDomain = getStorefrontDomain();
 
-  if (isDev) {
-    return slug ? `${devBaseUrl}/?salon=${slug}` : devBaseUrl;
-  }
-
-  return slug ? `https://${slug}.${baseDomain}` : `https://${baseDomain}`;
+  // if (isDev) {
+  //   return slug ? `${devBaseUrl}/?salon=${slug}` : devBaseUrl;
+  // }
+  return devBaseUrl;
+  // return slug ? `https://${slug}.${baseDomain}` : `https://${baseDomain}`;
 };
 
 export const getSubdomainDisplay = (slug: string): string => {
