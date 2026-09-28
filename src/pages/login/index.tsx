@@ -17,7 +17,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
 
   const handleFillTestCredentials = () => {
-    setEmail(`admin@${appName}.com`);
+    setEmail(`admin@zenmonk.com`);
     setPassword("Password@123");
     dispatch(clearAuthError());
   };
