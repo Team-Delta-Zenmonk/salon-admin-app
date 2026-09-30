@@ -16,6 +16,8 @@ import {
   Tag,
   Percent,
   IndianRupee,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,8 @@ import {
   PLAN_BASE_PRICES,
 } from "@/common/enums/subscription.enum";
 import { createSalonSchema, type CreateSalonForm } from "./schema/create-salon.schema";
+import { EllipsisCell } from "@/components/ui/ellipsis-cell";
+import { showSnackbar } from "@/components/ui/snackbar";
 
 interface CreateSalonModalProps {
   isOpen: boolean;
@@ -43,6 +47,7 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
   const [slugModified, setSlugModified] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -90,7 +95,6 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
     name: p.name,
     price: p.formatted_price === "Free" ? "Free" : `${p.formatted_price} ${p.billing_cycle}`,
     description: p.description,
-    badge: p.badge,
     icon: iconMap[p.id] || <Zap className="h-4 w-4 text-primary" />,
   }));
 
@@ -119,7 +123,8 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
   }
   const netPayable = Math.max(0, currentBasePrice - discountDeduction);
 
-  const handleClose = () => {
+  const handleClose = (force = false) => {
+    if (isSubmitting && !force) return;
     reset({
       name: "",
       slug: "",
@@ -132,6 +137,7 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
       discount_value: undefined,
     });
     setSlugModified(false);
+    setShowPassword(false);
     setError(null);
     onClose();
   };
@@ -156,9 +162,11 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
       pass += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     setValue("password", `${pass}!`, { shouldValidate: true });
+    setShowPassword(true);
   };
 
   const onSubmit = async (data: CreateSalonForm) => {
+    if (isSubmitting) return;
     try {
       setIsSubmitting(true);
       setError(null);
@@ -190,7 +198,9 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
       ).unwrap();
 
       dispatch(listSalonsAction());
-      handleClose();
+      setIsSubmitting(false);
+      handleClose(true);
+      showSnackbar("Salon provisioned successfully");
     } catch (err: any) {
       setError(typeof err === "string" ? err : "Failed to provision salon");
     } finally {
@@ -201,7 +211,8 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
   return (
     <Modal
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={() => handleClose()}
+      preventClose={isSubmitting}
       title="Provision New Salon Tenant"
       description="Register a new salon business and provision their SaaS workspace and storefront."
       maxWidth="lg"
@@ -210,7 +221,7 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
           <Button
             type="button"
             variant="outline"
-            onClick={handleClose}
+            onClick={() => handleClose()}
             disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
@@ -220,6 +231,7 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
             type="submit"
             form="create-salon-form"
             isLoading={isSubmitting}
+            disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
             Provision Salon
@@ -252,9 +264,17 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
                 },
               })}
               leftIcon={<Globe className="h-4 w-4" />}
-              helperText={watchSlug ? `Preview: ${watchSlug}.${getStorefrontDomain()}` : "Auto-generated from name"}
               error={errors.slug?.message}
             />
+            {watchSlug ? (
+              <EllipsisCell
+                as="p"
+                value={`Preview: ${watchSlug}.${getStorefrontDomain()}`}
+                className="mt-1.5 text-xs text-muted-foreground"
+              />
+            ) : (
+              <p className="mt-1.5 text-xs text-muted-foreground">Auto-generated from name</p>
+            )}
           </div>
         </div>
 
@@ -293,10 +313,22 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
             </button>
           </div>
           <Input
-            type="text"
+            type={showPassword ? "text" : "password"}
             {...register("password")}
             leftIcon={<Lock className="h-4 w-4" />}
+            rightIcon={
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer flex items-center justify-center p-0.5"
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            }
             error={errors.password?.message}
+            placeholder="rPVcLL7uvC!"
           />
         </div>
 
@@ -320,35 +352,26 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
                       : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
                   }`}
                 >
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center justify-between gap-1 mb-1">
-                      <div className="flex items-center gap-1.5">
-                        {plan.icon}
-                        <span className="text-xs font-bold text-foreground">{plan.name}</span>
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <span className="shrink-0">{plan.icon}</span>
+                        <EllipsisCell
+                          as="span"
+                          value={plan.name}
+                          className="text-xs font-bold text-foreground"
+                          wrapperClassName="min-w-0 flex-1"
+                        />
                       </div>
                       {isSelected && (
                         <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                       )}
                     </div>
-                    <p className="text-xs font-bold text-primary">{plan.price}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-snug">
+                    <p className="text-xs font-bold text-primary break-words">{plan.price}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-snug break-words">
                       {plan.description}
                     </p>
                   </div>
-
-                  {plan.badge && (
-                    <div className="mt-2.5">
-                      <span
-                        className={`inline-block px-1.5 py-0.5 text-[10px] font-medium rounded-md ${
-                          isSelected
-                            ? "bg-primary/15 text-primary"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {plan.badge}
-                      </span>
-                    </div>
-                  )}
                 </div>
               );
             })}

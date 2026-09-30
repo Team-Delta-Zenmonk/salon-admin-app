@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, Edit, RefreshCw, CheckCircle2, IndianRupee } from "lucide-react";
+import { EllipsisCell } from "@/components/ui/ellipsis-cell";
 
 export const PlansPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -27,8 +28,8 @@ export const PlansPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <CreditCard className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+            <CreditCard className="h-7 w-7 text-primary" />
             Subscription Plans & Pricing
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -67,28 +68,25 @@ export const PlansPage: React.FC = () => {
                   <Badge variant="outline" className="font-mono text-xs uppercase">
                     {plan.id}
                   </Badge>
-                  {plan.badge && (
-                    <Badge variant="default" size="sm">
-                      {plan.badge}
-                    </Badge>
-                  )}
                 </div>
                 <CardTitle className="text-xl font-bold mt-3 text-foreground">
-                  {plan.name}
+                  <EllipsisCell as="span" value={plan.name} />
                 </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground line-clamp-2">
+                <CardDescription className="text-xs text-muted-foreground break-words leading-relaxed">
                   {plan.description}
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold tracking-tight text-foreground">
+                <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+                  <span className="text-3xl font-extrabold tracking-tight text-foreground shrink-0">
                     {plan.formatted_price}
                   </span>
-                  <span className="text-sm text-muted-foreground font-medium">
-                    {plan.billing_cycle}
-                  </span>
+                  {plan.billing_cycle && (
+                    <span className="text-sm text-muted-foreground font-medium break-words">
+                      {plan.billing_cycle}
+                    </span>
+                  )}
                 </div>
 
                 <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-2 text-xs">

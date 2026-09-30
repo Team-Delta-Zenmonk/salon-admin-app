@@ -134,7 +134,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             }}
             role="tooltip"
             className={cn(
-              "z-50 pointer-events-none max-w-xs break-words rounded-lg border border-border bg-popover px-2.5 py-1 text-xs text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95",
+              "z-[9999] pointer-events-none max-w-xs break-words rounded-lg border border-border bg-popover px-2.5 py-1 text-xs text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95",
               className
             )}
           >

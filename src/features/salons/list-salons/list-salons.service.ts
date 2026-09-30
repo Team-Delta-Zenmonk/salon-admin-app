@@ -44,7 +44,6 @@ export interface BackendPlan {
   formatted_price: string;
   currency: string;
   billing_cycle: string;
-  badge?: string;
   description: string;
 }
 
@@ -62,7 +61,6 @@ export interface UpdatePlanPayload {
   amount?: number;
   name?: string;
   description?: string;
-  badge?: string;
   billing_cycle?: string;
 }
 

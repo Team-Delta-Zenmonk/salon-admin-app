@@ -10,6 +10,7 @@ export interface ModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl";
+  preventClose?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -20,10 +21,11 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   footer,
   maxWidth = "md",
+  preventClose = false,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+      if (e.key === "Escape" && isOpen && !preventClose) {
         onClose();
       }
     };
@@ -35,7 +37,7 @@ export const Modal: React.FC<ModalProps> = ({
       document.body.style.overflow = "unset";
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, preventClose]);
 
   if (!isOpen) return null;
 
@@ -50,7 +52,11 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex min-h-full items-center justify-center">
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
+        onClick={() => {
+          if (!preventClose) {
+            onClose();
+          }
+        }}
         aria-hidden="true"
       />
 
@@ -76,8 +82,18 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
           <button
             type="button"
-            onClick={onClose}
-            className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer -mr-1 -mt-0.5"
+            onClick={() => {
+              if (!preventClose) {
+                onClose();
+              }
+            }}
+            disabled={preventClose}
+            className={cn(
+              "shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors -mr-1 -mt-0.5",
+              preventClose
+                ? "opacity-30 cursor-not-allowed pointer-events-none"
+                : "hover:bg-muted hover:text-foreground cursor-pointer"
+            )}
           >
             <X className="h-5 w-5" />
             <span className="sr-only">Close</span>

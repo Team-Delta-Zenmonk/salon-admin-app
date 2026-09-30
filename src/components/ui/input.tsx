@@ -1,11 +1,11 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { EllipsisCell } from "@/components/ellipse-cell";
+import { EllipsisCell } from "@/components/ui/ellipsis-cell";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
-  helperText?: string;
+  helperText?: React.ReactNode;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
@@ -43,13 +43,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <div className="relative flex items-center">
+        <div className="relative flex items-center w-full">
           {leftIcon && (
             <div className="pointer-events-none absolute left-3 flex items-center text-muted-foreground z-10">
               {leftIcon}
             </div>
           )}
-          <EllipsisCell value={valString} className="w-full min-w-0 block">
+          <EllipsisCell value={valString} className="w-full min-w-0 block" wrapperClassName="w-full min-w-0 block">
             {inputElement}
           </EllipsisCell>
           {rightIcon && (
@@ -59,7 +59,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && <p className="text-xs text-destructive font-medium">{error}</p>}
-        {!error && helperText && <p className="text-xs text-muted-foreground">{helperText}</p>}
+        {!error && helperText && <div className="text-xs text-muted-foreground min-w-0">{helperText}</div>}
       </div>
     );
   }

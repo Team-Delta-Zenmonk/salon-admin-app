@@ -22,12 +22,11 @@ import { OverridePlanModal } from "@/pages/salons/_components/override-plan-moda
 import { ToggleStatusModal } from "@/pages/salons/_components/toggle-status-modal";
 import { CreateSalonModal } from "@/pages/salons/_components/create-salon-modal";
 import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS } from "@/common/enums/subscription.enum";
+import { DashboardMetrics, type MetricStat } from "./_components/dashboard-metrics";
 
 export const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { data: salons, total, isLoading, error, actionMessage } = useAppSelector(
-    (state) => state.salons
-  );
+  const { data: salons, total, isLoading, error, actionMessage } = useAppSelector((state) => state.salons);
 
   const [selectedSalon, setSelectedSalon] = useState<SalonItem | null>(null);
   const [trialModalOpen, setTrialModalOpen] = useState(false);
@@ -42,11 +41,13 @@ export const DashboardPage: React.FC = () => {
 
   const totalSalons = total || salons.length;
   const activePaid = salons.filter(
-    (s) => s.subscription_status === SUBSCRIPTION_STATUS.ACTIVE && s.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL
+    (s) => s.subscription_status === SUBSCRIPTION_STATUS.ACTIVE && s.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL,
   ).length;
   const activeTrials = salons.filter((s) => s.subscription_status === SUBSCRIPTION_STATUS.TRIAL).length;
   const expiredSalons = salons.filter((s) => s.subscription_status === SUBSCRIPTION_STATUS.EXPIRED).length;
-  const suspendedSalons = salons.filter((s) => !s.is_active || s.subscription_status === SUBSCRIPTION_STATUS.SUSPENDED).length;
+  const suspendedSalons = salons.filter(
+    (s) => !s.is_active || s.subscription_status === SUBSCRIPTION_STATUS.SUSPENDED,
+  ).length;
 
   const estimatedMRR = salons.reduce((acc, s) => {
     if (s.subscription_status === SUBSCRIPTION_STATUS.ACTIVE) {
@@ -56,7 +57,7 @@ export const DashboardPage: React.FC = () => {
     return acc;
   }, 0);
 
-  const stats = [
+  const stats: MetricStat[] = [
     {
       title: "Total Tenants",
       value: totalSalons,
@@ -119,9 +120,7 @@ export const DashboardPage: React.FC = () => {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Operations Dashboard
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Operations Dashboard</h1>
           <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
             Real-time multi-tenant monitoring, SaaS entitlement governance, and platform health.
           </p>
@@ -132,45 +131,21 @@ export const DashboardPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => dispatch(listSalonsAction({ page: 1, limit: 100 }))}
-            isLoading={isLoading}
             className="gap-1.5"
+            disabled={isLoading}
           >
-            <RefreshCw className="h-3.5 w-3.5" />
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => setCreateModalOpen(true)}
-            className="gap-1.5"
-          >
+          <Button size="sm" onClick={() => setCreateModalOpen(true)} className="gap-1.5">
             <PlusCircle className="h-3.5 w-3.5" />
             Provision Salon
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {stats.map((stat, idx) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={idx} className={`border ${stat.bg}`}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2 p-4">
-                <CardDescription className="text-xs font-semibold text-muted-foreground">
-                  {stat.title}
-                </CardDescription>
-                <Icon className={`h-4 w-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <div className="text-2xl font-black text-foreground">{stat.value}</div>
-                <p className="mt-1 text-[11px] text-muted-foreground font-medium">
-                  {stat.subtext}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      <DashboardMetrics stats={stats} />
 
       <Card className="border-border">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border p-5">
@@ -239,10 +214,7 @@ export const DashboardPage: React.FC = () => {
         salon={selectedSalon}
       />
 
-      <CreateSalonModal
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-      />
+      <CreateSalonModal isOpen={createModalOpen} onClose={() => setCreateModalOpen(false)} />
     </div>
   );
 };

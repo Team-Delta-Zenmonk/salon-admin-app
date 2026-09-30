@@ -5,30 +5,42 @@ import { cn } from "@/lib/utils";
 export interface EllipsisCellProps extends React.HTMLAttributes<HTMLElement> {
   value?: string | null;
   maxLines?: number;
+  maxChars?: number;
   className?: string;
-  as?: "div" | "span" | "p" | "h3" | "h4";
+  wrapperClassName?: string;
+  as?: any;
   tooltipContent?: React.ReactNode;
+  children?: React.ReactNode;
+  forceTooltip?: boolean;
 }
 
 export const EllipsisCell: React.FC<EllipsisCellProps> = ({
   value,
   maxLines = 1,
+  maxChars,
   className,
+  wrapperClassName,
   as: Component = "div",
   tooltipContent,
+  children,
+  forceTooltip = false,
   ...props
 }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef<HTMLElement | null>(null);
+
+  const isCharTruncated = Boolean(maxChars && value && value.length > maxChars);
+  const displayValue = isCharTruncated ? `${value?.slice(0, maxChars)}...` : (value || "");
 
   useEffect(() => {
     const element = textRef.current;
     if (!element) return;
 
     const checkOverflow = () => {
-      const hasHorizontalOverflow = element.scrollWidth > element.clientWidth + 1;
-      const hasVerticalOverflow = element.scrollHeight > element.clientHeight + 1;
-      setIsOverflowing(hasHorizontalOverflow || hasVerticalOverflow);
+      const target = (element.querySelector("input, textarea") as HTMLElement) || element;
+      const hasHorizontalOverflow = target.scrollWidth > target.clientWidth + 1;
+      const hasVerticalOverflow = target.scrollHeight > target.clientHeight + 1;
+      setIsOverflowing(isCharTruncated || hasHorizontalOverflow || hasVerticalOverflow);
     };
 
     checkOverflow();
@@ -36,9 +48,9 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
     const observer = new ResizeObserver(checkOverflow);
     observer.observe(element);
     return () => observer.disconnect();
-  }, [value, maxLines]);
+  }, [value, maxLines, isCharTruncated]);
 
-  if (!value) return null;
+  if (!value && !children) return null;
 
   const multilineStyles: React.CSSProperties | undefined =
     maxLines > 1
@@ -51,18 +63,26 @@ export const EllipsisCell: React.FC<EllipsisCellProps> = ({
       : undefined;
 
   return (
-    <Tooltip content={tooltipContent || value} disabled={!isOverflowing}>
+    <Tooltip
+      content={tooltipContent || value}
+      disabled={(!isOverflowing && !forceTooltip && !isCharTruncated) || !value}
+      wrapperClassName={cn(children ? "w-full min-w-0 block" : "", wrapperClassName)}
+    >
       <Component
         ref={textRef as any}
         style={multilineStyles}
         className={cn(
-          "overflow-hidden",
-          maxLines === 1 ? "truncate block" : "break-words",
+          children
+            ? "w-full min-w-0 max-w-full block"
+            : cn(
+                "overflow-hidden min-w-0 max-w-full",
+                maxLines === 1 ? "truncate block" : "break-words"
+              ),
           className
         )}
         {...props}
       >
-        {value}
+        {children || displayValue}
       </Component>
     </Tooltip>
   );

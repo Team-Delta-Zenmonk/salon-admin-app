@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateSalonPlanAction } from "@/features/salons/update-salon-plan/update-salon-plan.action";
 import { fetchSubscriptionPlans } from "@/features/plans/plans.slice";
 import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS, type SubscriptionPlan } from "@/common/enums/subscription.enum";
+import { showSnackbar } from "@/components/ui/snackbar";
 
 const overridePlanSchema = z.object({
   selectedPlan: z.enum([SUBSCRIPTION_PLAN.MONTHLY, SUBSCRIPTION_PLAN.YEARLY] as const),
@@ -98,7 +99,14 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
 
   const projectedDate = dayjs(currentBase).add(watchDurationDays, "day").format("MMMM D, YYYY");
 
+  const handleClose = (force = false) => {
+    if (isSubmitting && !force) return;
+    setError(null);
+    onClose();
+  };
+
   const onSubmit = async (data: OverridePlanForm) => {
+    if (isSubmitting) return;
     try {
       setIsSubmitting(true);
       setError(null);
@@ -126,7 +134,9 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
         })
       ).unwrap();
 
-      onClose();
+      setIsSubmitting(false);
+      handleClose(true);
+      showSnackbar("Subscription plan overridden successfully");
     } catch (err: any) {
       setError(typeof err === "string" ? err : "Failed to override subscription plan");
     } finally {
@@ -137,7 +147,8 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => handleClose()}
+      preventClose={isSubmitting}
       title="Override Subscription Plan"
       description={`Grant or adjust subscription entitlement for "${salon.name}".`}
       maxWidth="lg"
@@ -253,7 +264,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={() => handleClose()}
             disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
@@ -263,6 +274,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
             type="submit"
             variant="default"
             isLoading={isSubmitting}
+            disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
             Apply Plan & Activate

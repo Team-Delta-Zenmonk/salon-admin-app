@@ -3,19 +3,15 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Building2,
-  ExternalLink,
   LogOut,
-  ShieldCheck,
   Menu,
   X,
-  Activity,
   CreditCard,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logout } from "@/features/auth/auth.slice";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getStorefrontUrl } from "@/lib/domain";
+import { SnackbarContainer } from "@/components/ui/snackbar";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -78,9 +74,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <div className="flex flex-col">
               <span className="text-base font-bold tracking-tight text-foreground flex items-center gap-1.5">
                 {appName}
-                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary border border-primary/20">
-                  OPS
-                </span>
               </span>
               <span className="text-[11px] text-muted-foreground">Admin Console</span>
             </div>
@@ -123,57 +116,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </Link>
             );
           })}
-
-          <div className="pt-4 px-2.5 pb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-            Portals
-          </div>
-
-          <a
-            href={getStorefrontUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <span className="flex items-center gap-2.5 min-w-0 truncate">
-              <Building2 className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
-              <span className="truncate">Public Storefront</span>
-            </span>
-            <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          </a>
-        </div>
-
-        <div className="px-3 pb-3">
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground">
-            <Activity className="h-3.5 w-3.5 shrink-0 text-emerald-500 animate-pulse" />
-            <span className="font-medium text-foreground truncate">API Gateway</span>
-            <span className="ml-auto text-[10px] font-mono text-muted-foreground shrink-0">v5.1 Live</span>
-          </div>
-        </div>
-
-        <div className="border-t border-border p-3">
-          <div className="flex items-center justify-between gap-2 rounded-xl border border-border bg-background p-2.5 min-w-0">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary text-xs">
-                {admin?.name?.charAt(0).toUpperCase() || "A"}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-foreground">
-                  {admin?.name || `${appName} Admin`}
-                </p>
-                <p className="truncate text-[10px] text-muted-foreground font-mono">
-                  {admin?.email || `admin@${appName.toLowerCase()}.com`}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleLogout}
-              title="Sign Out"
-              className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-destructive transition-colors cursor-pointer shrink-0"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
         </div>
       </aside>
 
@@ -198,9 +140,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge variant="info" size="sm" withDot>
-              {admin?.role?.toUpperCase() || "SUPER ADMIN"}
-            </Badge>
 
             <Button
               variant="outline"
@@ -217,6 +156,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 bg-background">
           {children}
         </main>
+        <SnackbarContainer />
       </div>
     </div>
   );

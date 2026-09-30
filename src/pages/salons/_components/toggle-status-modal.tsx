@@ -6,6 +6,7 @@ import type { SalonItem } from "@/features/salons/list-salons/list-salons.servic
 import { useAppDispatch } from "@/store/hooks";
 import { updateSalonStatusAction } from "@/features/salons/update-salon-status/update-salon-status.action";
 import { getSubdomainDisplay } from "@/lib/domain";
+import { showSnackbar } from "@/components/ui/snackbar";
 
 interface ToggleStatusModalProps {
   isOpen: boolean;
@@ -26,7 +27,14 @@ export const ToggleStatusModal: React.FC<ToggleStatusModalProps> = ({
 
   const willSuspend = salon.is_active && salon.subscription_status !== "suspended";
 
+  const handleClose = (force = false) => {
+    if (isSubmitting && !force) return;
+    setError(null);
+    onClose();
+  };
+
   const handleConfirm = async () => {
+    if (isSubmitting) return;
     try {
       setIsSubmitting(true);
       setError(null);
@@ -41,7 +49,13 @@ export const ToggleStatusModal: React.FC<ToggleStatusModalProps> = ({
         })
       ).unwrap();
 
-      onClose();
+      setIsSubmitting(false);
+      handleClose(true);
+      showSnackbar(
+        willSuspend
+          ? "Salon access suspended successfully"
+          : "Salon reactivated successfully"
+      );
     } catch (err: any) {
       setError(typeof err === "string" ? err : "Failed to update salon status");
     } finally {
@@ -52,7 +66,8 @@ export const ToggleStatusModal: React.FC<ToggleStatusModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => handleClose()}
+      preventClose={isSubmitting}
       title={willSuspend ? "Suspend Salon Access" : "Reactivate Salon"}
       description={
         willSuspend
@@ -121,7 +136,7 @@ export const ToggleStatusModal: React.FC<ToggleStatusModalProps> = ({
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={() => handleClose()}
             disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
@@ -132,6 +147,7 @@ export const ToggleStatusModal: React.FC<ToggleStatusModalProps> = ({
             variant={willSuspend ? "destructive" : "default"}
             onClick={handleConfirm}
             isLoading={isSubmitting}
+            disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
             {willSuspend ? "Confirm Suspension" : "Confirm Reactivation"}

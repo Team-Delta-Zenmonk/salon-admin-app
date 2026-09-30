@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Mail, Lock, AlertCircle, KeyRound, Sparkles } from "lucide-react";
+import { ShieldCheck, Mail, Lock, AlertCircle, KeyRound, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loginAdminAction } from "@/features/auth/login/login.action";
 import { clearAuthError } from "@/features/auth/auth.slice";
@@ -15,6 +15,7 @@ export const LoginPage: React.FC = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleFillTestCredentials = () => {
     setEmail(`admin@zenmonk.com`);
@@ -72,11 +73,22 @@ export const LoginPage: React.FC = () => {
 
             <Input
               label="Secret Key / Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="••••••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               leftIcon={<Lock className="h-4 w-4" />}
+              rightIcon={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer flex items-center justify-center p-0.5"
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              }
               required
             />
 
@@ -108,26 +120,6 @@ export const LoginPage: React.FC = () => {
               </button>
             </div>
           </div>
-          {import.meta.env.DEV && (
-            <div className="mt-6 pt-5 border-t border-border">
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs">
-                  <Sparkles className="h-4 w-4 text-primary shrink-0" />
-                  <div>
-                    <p className="font-semibold text-foreground">Dev / Demo Credentials</p>
-                    <p className="text-[11px] text-muted-foreground font-mono">{`admin@${appName}.com`}</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleFillTestCredentials}
-                  className="rounded-lg bg-primary/10 hover:bg-primary/20 px-2.5 py-1 text-xs font-semibold text-primary border border-primary/20 transition-colors cursor-pointer"
-                >
-                  1-Click Fill
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         <p className="mt-6 text-center text-[11px] text-muted-foreground">

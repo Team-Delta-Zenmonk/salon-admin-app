@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import type { SalonItem } from "@/features/salons/list-salons/list-salons.service";
 import { useAppDispatch } from "@/store/hooks";
 import { updateSalonPlanAction } from "@/features/salons/update-salon-plan/update-salon-plan.action";
+import { showSnackbar } from "@/components/ui/snackbar";
 
 const extendTrialSchema = z.object({
   days: z.coerce.number().min(1, "Must be at least 1 day").max(365, "Maximum 365 days"),
@@ -63,7 +64,14 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
       : new Date();
   const projectedDate = dayjs(currentBase).add(watchDays || 0, "day").format("MMMM D, YYYY h:mm A");
 
+  const handleClose = (force = false) => {
+    if (isSubmitting && !force) return;
+    setError(null);
+    onClose();
+  };
+
   const onSubmit = async (data: ExtendTrialForm) => {
+    if (isSubmitting) return;
     try {
       setIsSubmitting(true);
       setError(null);
@@ -77,7 +85,9 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
         })
       ).unwrap();
 
-      onClose();
+      setIsSubmitting(false);
+      handleClose(true);
+      showSnackbar("Trial period extended successfully");
     } catch (err: any) {
       setError(typeof err === "string" ? err : "Failed to extend trial period");
     } finally {
@@ -88,7 +98,8 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => handleClose()}
+      preventClose={isSubmitting}
       title="Extend Salon Trial Period"
       description={`Grant supplementary trial days to "${salon.name}".`}
       maxWidth="md"
@@ -168,7 +179,7 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={() => handleClose()}
             disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
@@ -177,6 +188,7 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
           <Button
             type="submit"
             isLoading={isSubmitting}
+            disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
             Apply Trial Extension
