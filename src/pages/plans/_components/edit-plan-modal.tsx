@@ -156,7 +156,8 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
           <textarea
             {...register("description")}
             rows={3}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            style={{ scrollbarWidth: "none" }}
+            className="no-scrollbar block w-full resize-none rounded-lg border border-border bg-input-bg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             placeholder="Enter plan description..."
           />
           {errors.description && <p className="mt-1 text-xs text-destructive">{errors.description.message}</p>}
