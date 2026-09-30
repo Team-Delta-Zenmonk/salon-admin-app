@@ -140,12 +140,13 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
             {...register("code", { required: "Plan code is required" })}
             placeholder="e.g. quarterly_pro"
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            Unique slug identifier used in backend DB and Stripe billing metadata.
-          </p>
-          {errors.code && (
+          {errors.code ? (
             <p className="mt-1 text-xs text-destructive">{errors.code.message}</p>
-          )}
+          ) :
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Unique slug identifier used in backend DB and Stripe billing metadata.
+            </p>
+          }
         </div>
 
         <div>
@@ -201,7 +202,7 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
 
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1">
-            Description
+            Description (Optional)
           </label>
           <textarea
             {...register("description")}

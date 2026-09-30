@@ -145,14 +145,14 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-foreground mb-1">Billing Cycle Tag</label>
+          <label className="block text-xs font-semibold text-foreground mb-1">Billing Cycle Tag (Optional)</label>
           <Input {...register("billing_cycle")} placeholder="e.g. / mo, / yr, trial" />
           {errors.billing_cycle && <p className="mt-1 text-xs text-destructive">{errors.billing_cycle.message}</p>}
         </div>
 
 
         <div>
-          <label className="block text-xs font-semibold text-foreground mb-1">Description</label>
+          <label className="block text-xs font-semibold text-foreground mb-1">Description (Optional)</label>
           <textarea
             {...register("description")}
             rows={3}

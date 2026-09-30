@@ -5,19 +5,19 @@ export const createPlanSchema = z
     name: z
       .string()
       .trim()
-      .min(1, "Plan name is required")
+      .min(1, "Required")
       .max(255, "Plan name cannot exceed 255 characters"),
     code: z
       .string()
       .trim()
-      .min(1, "Plan code is required")
+      .min(1, "Required")
       .max(50, "Plan code cannot exceed 50 characters")
       .regex(/^[a-z0-9_]+$/, "Code must contain only lowercase letters, numbers, and underscores"),
     amount: z.coerce
-      .number({ required_error: "Price amount is required", invalid_type_error: "Amount must be a number" })
+      .number({ required_error: "Required", invalid_type_error: "Amount must be a number" })
       .min(0, "Price amount cannot be negative"),
     duration_days: z.coerce
-      .number({ required_error: "Duration days is required", invalid_type_error: "Duration days must be a number" })
+      .number({ required_error: "Required", invalid_type_error: "Duration days must be a number" })
       .int("Duration must be an integer number of days")
       .min(1, "Duration must be at least 1 day")
       .max(365, "Duration cannot exceed 365 days"),
