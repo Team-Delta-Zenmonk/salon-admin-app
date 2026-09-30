@@ -3,25 +3,41 @@ import { z } from "zod";
 export const editPlanSchema = z.object({
   name: z
     .string()
-    .min(1, "Required")
-    .max(50, "Maximum 50 characters"),
+    .trim()
+    .min(1, "Plan name is required")
+    .max(255, "Plan name cannot exceed 255 characters"),
   amount: z.coerce
-    .number({ invalid_type_error: "Price amount is required" })
-    .min(0, "Price must be non-negative")
-    .max(100000, "Price cannot exceed 1,00,000"),
+    .number({ required_error: "Price amount is required", invalid_type_error: "Amount must be a number" })
+    .min(0, "Price amount cannot be negative"),
+  duration_days: z.coerce
+    .number({ required_error: "Duration days is required", invalid_type_error: "Duration days must be a number" })
+    .int("Duration must be an integer number of days")
+    .min(1, "Duration must be at least 1 day")
+    .max(365, "Duration cannot exceed 365 days"),
   billing_cycle: z
     .string()
-    .max(30, "Maximum 30 characters")
+    .trim()
+    .max(50, "Billing cycle tag cannot exceed 50 characters")
     .optional()
     .or(z.literal("")),
   description: z
     .string()
-    .max(250, "Maximum 250 characters")
+    .trim()
+    .max(300, "Description cannot exceed 300 characters")
     .optional()
     .or(z.literal("")),
 });
 
-export const changePricingSchema = editPlanSchema;
+export const getEditPlanSchema = (planCode?: string) =>
+  editPlanSchema.superRefine((data, ctx) => {
+    const isFreeTier = planCode?.toLowerCase().trim() === "trial";
+    if (!isFreeTier && data.amount <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["amount"],
+        message: "Zero price (₹0) is only allowed for the free trial tier (code: trial)",
+      });
+    }
+  });
 
 export type EditPlanForm = z.infer<typeof editPlanSchema>;
-export type ChangePricingForm = EditPlanForm;

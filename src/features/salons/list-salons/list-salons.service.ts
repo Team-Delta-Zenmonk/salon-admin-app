@@ -39,12 +39,15 @@ export interface ListSalonsResponse {
 
 export interface BackendPlan {
   id: SubscriptionPlan;
+  code?: string;
+  db_id?: number;
   name: string;
   amount: number;
   formatted_price: string;
   currency: string;
   billing_cycle: string;
   description: string;
+  duration_days: number;
 }
 
 export const listSalonsService = async (params: ListSalonsParams = {}): Promise<ListSalonsResponse> => {
@@ -62,6 +65,17 @@ export interface UpdatePlanPayload {
   name?: string;
   description?: string;
   billing_cycle?: string;
+  duration_days?: number;
+  code?: string;
+}
+
+export interface CreatePlanPayload {
+  name: string;
+  amount: number;
+  duration_days: number;
+  billing_cycle?: string;
+  description?: string;
+  code?: string;
 }
 
 export const updateSubscriptionPlanService = async (
@@ -70,6 +84,16 @@ export const updateSubscriptionPlanService = async (
 ): Promise<BackendPlan> => {
   const res = await axiosInstance.patch<{ message: string; plan: BackendPlan }>(
     `/admin/plans/${code}`,
+    payload
+  );
+  return res.data.plan;
+};
+
+export const createSubscriptionPlanService = async (
+  payload: CreatePlanPayload
+): Promise<BackendPlan> => {
+  const res = await axiosInstance.post<{ message: string; plan: BackendPlan }>(
+    "/admin/plans",
     payload
   );
   return res.data.plan;

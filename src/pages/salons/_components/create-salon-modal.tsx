@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { createSalonAction } from "@/features/salons/create-salon/create-salon.action";
 import { listSalonsAction } from "@/features/salons/list-salons/list-salons.action";
-import { fetchSubscriptionPlans } from "@/features/plans/plans.slice";
+import { fetchSubscriptionPlans } from "@/features/plans/plans.action";
 import { getStorefrontDomain } from "@/lib/domain";
 import {
   SUBSCRIPTION_PLAN,

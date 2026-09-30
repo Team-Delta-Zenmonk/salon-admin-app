@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SnackbarMessage {
@@ -45,37 +45,44 @@ export const SnackbarContainer: React.FC = () => {
   if (messages.length === 0) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0">
+    <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2.5 pointer-events-none max-w-sm w-full px-4 sm:px-0">
       {messages.map((m) => (
         <div
           key={m.id}
           className={cn(
-            "pointer-events-auto flex items-center justify-between gap-3 p-3.5 rounded-xl border shadow-xl text-xs sm:text-sm font-medium transition-all animate-in slide-in-from-bottom-5 fade-in-0 duration-200",
+            "pointer-events-auto flex items-center justify-between gap-3 p-3.5 rounded-2xl border shadow-xl text-xs sm:text-sm font-medium transition-all animate-in slide-in-from-bottom-4 fade-in-0 duration-200 bg-card text-card-foreground border-border",
             m.type === "success" &&
-              "bg-popover text-foreground border-emerald-500/40 shadow-emerald-500/5",
+              "border-emerald-500/30 dark:border-emerald-500/40 bg-card text-foreground shadow-emerald-500/5",
             m.type === "error" &&
-              "bg-popover text-destructive border-destructive/40 shadow-destructive/5",
-            m.type === "info" && "bg-popover text-foreground border-border shadow-md"
+              "border-destructive/30 bg-card text-foreground shadow-destructive/5",
+            m.type === "info" && "border-primary/30 bg-card text-foreground shadow-primary/5"
           )}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             {m.type === "success" && (
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                <CheckCircle2 className="h-4 w-4" />
+              </div>
             )}
             {m.type === "error" && (
-              <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+              <div className="w-8 h-8 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center shrink-0 border border-destructive/20">
+                <AlertCircle className="h-4 w-4" />
+              </div>
             )}
             {m.type === "info" && (
-              <Info className="h-4 w-4 text-primary shrink-0" />
+              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                <Sparkles className="h-4 w-4" />
+              </div>
             )}
-            <span className="truncate">{m.message}</span>
+            <span className="truncate leading-snug font-semibold text-foreground">{m.message}</span>
           </div>
           <button
             type="button"
             onClick={() => removeMessage(m.id)}
-            className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer p-0.5 rounded-md hover:bg-muted transition-colors"
+            className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer p-1 rounded-lg hover:bg-muted transition-colors"
+            aria-label="Dismiss notification"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
       ))}

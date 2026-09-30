@@ -1,10 +1,11 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { BackendPlan } from "../salons/list-salons/list-salons.service";
 import {
-  getSubscriptionPlansService,
-  updateSubscriptionPlanService,
-  type BackendPlan,
-  type UpdatePlanPayload,
-} from "../salons/list-salons/list-salons.service";
+  fetchSubscriptionPlans,
+  updateSubscriptionPlan,
+  createSubscriptionPlan,
+  deleteSubscriptionPlan,
+} from "./plans.action";
 
 export interface PlansState {
   plans: BackendPlan[];
@@ -20,40 +21,12 @@ const initialState: PlansState = {
   successMessage: null,
 };
 
-export const fetchSubscriptionPlans = createAsyncThunk<BackendPlan[], void, { rejectValue: string }>(
-  "plans/fetchSubscriptionPlans",
-  async (_, thunkAPI) => {
-    try {
-      const plans = await getSubscriptionPlansService();
-      return plans;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || "Failed to fetch plans");
-    }
-  }
-);
-
-export interface UpdatePlanArgs {
-  code: string;
-  payload: UpdatePlanPayload;
-}
-
-export const updateSubscriptionPlan = createAsyncThunk<
-  BackendPlan,
-  UpdatePlanArgs,
-  { rejectValue: string }
->(
-  "plans/updateSubscriptionPlan",
-  async ({ code, payload }, thunkAPI) => {
-    try {
-      const updatedPlan = await updateSubscriptionPlanService(code, payload);
-      return updatedPlan;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || "Failed to update plan pricing"
-      );
-    }
-  }
-);
+export {
+  fetchSubscriptionPlans,
+  updateSubscriptionPlan,
+  createSubscriptionPlan,
+  deleteSubscriptionPlan,
+};
 
 export const plansSlice = createSlice({
   name: "plans",
@@ -98,6 +71,34 @@ export const plansSlice = createSlice({
       .addCase(updateSubscriptionPlan.rejected, (state, action) => {
         state.isLoading = false;
         state.error = (action.payload as string) || "Failed to update plan pricing";
+      })
+      .addCase(createSubscriptionPlan.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(createSubscriptionPlan.fulfilled, (state, action: PayloadAction<BackendPlan>) => {
+        state.isLoading = false;
+        state.successMessage = `Plan '${action.payload.name}' created successfully!`;
+        state.plans.push(action.payload);
+      })
+      .addCase(createSubscriptionPlan.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = (action.payload as string) || "Failed to create plan";
+      })
+      .addCase(deleteSubscriptionPlan.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(deleteSubscriptionPlan.fulfilled, (state, action: PayloadAction<string>) => {
+        state.isLoading = false;
+        state.successMessage = `Plan '${action.payload}' deleted successfully!`;
+        state.plans = state.plans.filter((p) => p.id !== action.payload && p.code !== action.payload);
+      })
+      .addCase(deleteSubscriptionPlan.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = (action.payload as string) || "Failed to delete plan";
       });
   },
 });

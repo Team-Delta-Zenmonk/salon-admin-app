@@ -5,10 +5,11 @@ import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { updateSubscriptionPlan, clearPlansError, clearPlansSuccessMessage } from "@/features/plans/plans.slice";
+import { clearPlansError, clearPlansSuccessMessage } from "@/features/plans/plans.slice";
+import { updateSubscriptionPlan } from "@/features/plans/plans.action";
 import type { BackendPlan } from "@/features/salons/list-salons/list-salons.service";
 import { AlertCircle, IndianRupee } from "lucide-react";
-import { editPlanSchema, type EditPlanForm } from "./schema/edit-plan.schema";
+import { getEditPlanSchema, type EditPlanForm } from "./schema/edit-plan.schema";
 import { showSnackbar } from "@/components/ui/snackbar";
 
 interface EditPlanModalProps {
@@ -23,6 +24,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isBusy = isLoading || isSubmitting;
+  const planCode = plan?.code || (plan?.id as string);
 
   const {
     register,
@@ -30,15 +32,18 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
     reset,
     formState: { errors },
   } = useForm<EditPlanForm>({
-    resolver: zodResolver(editPlanSchema),
+    resolver: zodResolver(getEditPlanSchema(planCode)),
+    mode: "onChange",
   });
 
   useEffect(() => {
     if (plan) {
       reset({
         amount: plan.amount,
-        name: plan.name,        description: plan.description || "",
+        name: plan.name,
+        description: plan.description || "",
         billing_cycle: plan.billing_cycle || "",
+        duration_days: plan.duration_days || 30,
       });
     }
   }, [plan, reset]);
@@ -60,8 +65,9 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
           payload: {
             amount: Number(data.amount),
             name: data.name,
-            description: data.description,
-            billing_cycle: data.billing_cycle,
+            description: data.description || undefined,
+            billing_cycle: data.billing_cycle || undefined,
+            duration_days: Number(data.duration_days),
           },
         }),
       );
@@ -117,6 +123,24 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
             <p className="mt-1 text-[11px] text-muted-foreground">
               This price will immediately apply for all new tenants joining or upgrading to this plan.
             </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-foreground mb-1">
+            Duration (Days)
+          </label>
+          <Input
+            type="number"
+            min="1"
+            {...register("duration_days", {
+              required: "Duration days is required",
+              min: { value: 1, message: "Duration must be at least 1 day" },
+            })}
+            placeholder="e.g. 14, 30, 90, 365"
+          />
+          {errors.duration_days && (
+            <p className="mt-1 text-xs text-destructive">{errors.duration_days.message}</p>
           )}
         </div>
 

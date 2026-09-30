@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import type { SalonItem } from "@/features/salons/list-salons/list-salons.service";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateSalonPlanAction } from "@/features/salons/update-salon-plan/update-salon-plan.action";
-import { fetchSubscriptionPlans } from "@/features/plans/plans.slice";
+import { fetchSubscriptionPlans } from "@/features/plans/plans.action";
 import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS, type SubscriptionPlan } from "@/common/enums/subscription.enum";
 import { showSnackbar } from "@/components/ui/snackbar";
 

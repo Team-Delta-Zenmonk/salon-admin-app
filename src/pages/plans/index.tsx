@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchSubscriptionPlans } from "@/features/plans/plans.slice";
+import { fetchSubscriptionPlans } from "@/features/plans/plans.action";
 import type { BackendPlan } from "@/features/salons/list-salons/list-salons.service";
 import { EditPlanModal } from "./_components/edit-plan-modal";
+import { CreatePlanModal } from "./_components/create-plan-modal";
+import { DeletePlanModal } from "./_components/delete-plan-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Edit, RefreshCw, CheckCircle2, IndianRupee } from "lucide-react";
+import { CreditCard, Edit, RefreshCw, CheckCircle2, IndianRupee, Plus, Trash2 } from "lucide-react";
 import { EllipsisCell } from "@/components/ui/ellipsis-cell";
 
 export const PlansPage: React.FC = () => {
@@ -14,6 +16,8 @@ export const PlansPage: React.FC = () => {
   const { plans, isLoading, error } = useAppSelector((state) => state.plans);
   const [selectedPlan, setSelectedPlan] = useState<BackendPlan | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchSubscriptionPlans());
@@ -22,6 +26,11 @@ export const PlansPage: React.FC = () => {
   const handleEditPlan = (plan: BackendPlan) => {
     setSelectedPlan(plan);
     setEditModalOpen(true);
+  };
+
+  const handleDeletePlan = (plan: BackendPlan) => {
+    setSelectedPlan(plan);
+    setDeleteModalOpen(true);
   };
 
   return (
@@ -37,15 +46,25 @@ export const PlansPage: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => dispatch(fetchSubscriptionPlans())}
-          disabled={isLoading}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => setCreateModalOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            Create Plan
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => dispatch(fetchSubscriptionPlans())}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -64,12 +83,7 @@ export const PlansPage: React.FC = () => {
           {plans.map((plan) => (
             <Card key={plan.id} className="relative flex flex-col justify-between overflow-hidden border-border transition-all hover:border-primary/40 hover:shadow-md">
               <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="font-mono text-xs uppercase">
-                    {plan.id}
-                  </Badge>
-                </div>
-                <CardTitle className="text-xl font-bold mt-3 text-foreground">
+                <CardTitle className="text-xl font-bold text-foreground">
                   <EllipsisCell as="span" value={plan.name} />
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground break-words leading-relaxed">
@@ -102,6 +116,12 @@ export const PlansPage: React.FC = () => {
                     <span className="font-bold text-foreground font-mono">{plan.currency}</span>
                   </div>
                   <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Plan Duration:</span>
+                    <Badge variant="outline" className="font-bold text-foreground font-mono inline-flex items-center justify-center leading-none">
+                      {plan.duration_days ?? 30} days
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-muted-foreground">
                     <span>Active Status:</span>
                     <span className="font-bold text-emerald-600 flex items-center">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -110,13 +130,25 @@ export const PlansPage: React.FC = () => {
                   </div>
                 </div>
 
-                <Button
-                  className="w-full"
-                  onClick={() => handleEditPlan(plan)}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Change Pricing
-                </Button>
+                <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+                  <Button
+                    variant="default"
+                    className="flex-1 font-semibold shadow-xs gap-1.5"
+                    onClick={() => handleEditPlan(plan)}
+                  >
+                    <Edit className="h-4 w-4" />
+                    <span>Edit Pricing</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 font-semibold gap-1.5"
+                    onClick={() => handleDeletePlan(plan)}
+                    title="Delete Plan"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span>Delete</span>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -126,6 +158,17 @@ export const PlansPage: React.FC = () => {
       <EditPlanModal
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
+        plan={selectedPlan}
+      />
+
+      <CreatePlanModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+      />
+
+      <DeletePlanModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
         plan={selectedPlan}
       />
     </div>
