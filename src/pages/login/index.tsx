@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ShieldCheck, Mail, Lock, AlertCircle, KeyRound, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loginAdminAction } from "@/features/auth/login/login.action";
 import { clearAuthError } from "@/features/auth/auth.slice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { loginSchema, type LoginForm } from "./schema/login.schema";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,24 +16,37 @@ export const LoginPage: React.FC = () => {
   const { isLoading, error } = useAppSelector((state) => state.auth);
   const appName = import.meta.env.VITE_APP_NAME || "Veloura";
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    clearErrors,
+    formState: { errors },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    mode: "onSubmit",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
   const handleFillTestCredentials = () => {
-    setEmail(`admin@zenmonk.com`);
-    setPassword("Password@123");
+    setValue("email", "admin@zenmonk.com", { shouldValidate: true });
+    setValue("password", "Password@123", { shouldValidate: true });
+    clearErrors();
     dispatch(clearAuthError());
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password) return;
-
+  const onSubmit = async (data: LoginForm) => {
     try {
-      await dispatch(loginAdminAction({ email: email.trim(), password })).unwrap();
+      await dispatch(loginAdminAction({ email: data.email.trim(), password: data.password })).unwrap();
       navigate("/dashboard");
-    } catch { /* Error handled by Redux state */ }
+    } catch {
+      /* Error handled by Redux state */
+    }
   };
 
   return (
@@ -49,7 +65,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         <div className="rounded-lg border border-border bg-card p-6 sm:p-8 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
             {error && (
               <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs text-destructive flex items-start gap-2.5">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -62,12 +78,11 @@ export const LoginPage: React.FC = () => {
 
             <Input
               label="Operator Email"
-              type="email"
+              type="text"
               placeholder={`admin@${appName}.com`}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              {...register("email")}
+              error={errors.email?.message}
               leftIcon={<Mail className="h-4 w-4" />}
-              required
               autoFocus
             />
 
@@ -75,8 +90,8 @@ export const LoginPage: React.FC = () => {
               label="Secret Key / Password"
               type={showPassword ? "text" : "password"}
               placeholder="••••••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              {...register("password")}
+              error={errors.password?.message}
               leftIcon={<Lock className="h-4 w-4" />}
               rightIcon={
                 <button
@@ -89,7 +104,6 @@ export const LoginPage: React.FC = () => {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               }
-              required
             />
 
             <Button
