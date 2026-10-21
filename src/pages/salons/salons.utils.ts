@@ -14,10 +14,7 @@ export const getSalonStatusBadgeVariant = (salon: SalonItem): BadgeProps["varian
 };
 
 export const getSalonExpiryCountdown = (salon: SalonItem) => {
-  const targetDate =
-    salon.subscription_status === "trial"
-      ? salon.trial_ends_at
-      : salon.subscription_expires_at;
+  const targetDate = salon.subscription_expires_at || salon.trial_ends_at;
   const countdown = getDaysRemaining(targetDate);
   const isSuspended = isSalonSuspended(salon);
 

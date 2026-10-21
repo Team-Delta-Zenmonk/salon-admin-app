@@ -104,7 +104,7 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
       description={`Grant supplementary trial days to "${salon.name}".`}
       maxWidth="md"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div className="rounded-xl border border-border bg-background p-4 space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Current Status:</span>
@@ -147,8 +147,6 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
 
         <Input
           type="number"
-          min="1"
-          max="365"
           label="Custom Additional Days"
           {...register("days")}
           leftIcon={<Calendar className="h-4 w-4" />}

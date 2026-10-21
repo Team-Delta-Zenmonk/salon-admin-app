@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
-  Building2,
   LogOut,
   Menu,
   X,
   CreditCard,
 } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch } from "@/store/hooks";
 import { logout } from "@/features/auth/auth.slice";
 import { Button } from "@/components/ui/button";
 import { SnackbarContainer } from "@/components/ui/snackbar";
@@ -21,7 +20,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { admin } = useAppSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const appName = import.meta.env.VITE_APP_NAME || "Veloura";
 
@@ -37,11 +35,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: LayoutDashboard,
     },
     {
-      name: "Salons Directory",
-      path: "/salons",
-      icon: Building2,
-    },
-    {
       name: "Plan Pricing",
       path: "/plans",
       icon: CreditCard,
@@ -49,7 +42,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground antialiased font-sans">
+    <div className="flex min-h-screen min-h-[100dvh] bg-background text-foreground antialiased font-sans">
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs lg:hidden"
@@ -119,7 +112,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4 sm:px-8">
           <div className="flex items-center gap-3">
             <button
@@ -153,7 +146,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8 bg-background">
+        <main id="admin-main-content" className="flex-1 overflow-y-auto p-4 sm:p-8 bg-background">
           {children}
         </main>
         <SnackbarContainer />

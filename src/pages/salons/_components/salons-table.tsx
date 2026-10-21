@@ -74,7 +74,6 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
 
   return (
     <>
-      {/* Desktop View: Table (>= 700px) */}
       <div className="hidden min-[700px]:block overflow-x-auto">
         <table className="w-full text-left text-xs text-foreground">
           <thead className="bg-muted/40 text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border">
@@ -83,7 +82,7 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
               <th className="py-2.5 px-4">Contact Info</th>
               <th className="py-2.5 px-4">Tier</th>
               <th className="py-2.5 px-4">Status</th>
-              <th className="py-2.5 px-4">Expiry</th>
+              <th className="py-2.5 px-4">Plan/Trial Expiry</th>
               <th className="py-2.5 px-4">Created</th>
               <th className="py-2.5 px-4 sm:px-6 text-right">Actions</th>
             </tr>
@@ -150,9 +149,8 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                     ) : targetDate ? (
                       <div>
                         <span
-                          className={`font-semibold font-mono ${
-                            countdown.isExpired ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"
-                          }`}
+                          className={`font-semibold font-mono ${countdown.isExpired ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"
+                            }`}
                         >
                           {countdown.text}
                         </span>
@@ -161,7 +159,7 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <span className="text-muted-foreground">Not specified</span>
+                      <span className="text-muted-foreground">No Expiry</span>
                     )}
                   </td>
 
@@ -185,7 +183,6 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
         </table>
       </div>
 
-      {/* Mobile & Tablet View: Responsive Cards (< 700px) */}
       <div className="min-[700px]:hidden">
         <SalonsCards
           salons={salons}

@@ -17,7 +17,6 @@ export const NotFoundPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 antialiased font-sans">
       <div className="w-full max-w-md text-center space-y-6">
-        {/* Logo / Admin Header */}
         <div className="flex items-center justify-center gap-2 mb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-border/40 shadow-xs">
             <img src="/management-icon.png" alt="Admin Logo" className="h-full w-full object-cover rounded-xl" />
@@ -27,18 +26,14 @@ export const NotFoundPage: React.FC = () => {
           </span>
         </div>
 
-        {/* Card Box */}
         <div className="rounded-2xl border border-border bg-card p-8 shadow-sm relative overflow-hidden">
-          {/* Subtle decorative background accent */}
           <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
           <div className="absolute -left-12 -bottom-12 h-32 w-32 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
 
-          {/* Icon Badge */}
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary mb-6 shadow-xs">
             <ShieldAlert className="h-10 w-10" />
           </div>
 
-          {/* 404 Display */}
           <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold font-mono text-primary border border-primary/20 mb-3">
             ERROR 404
           </span>
@@ -60,7 +55,6 @@ export const NotFoundPage: React.FC = () => {
             </ul>
           </div>
 
-          {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
               variant="outline"
@@ -80,7 +74,6 @@ export const NotFoundPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Footer info */}
         <p className="text-xs text-muted-foreground">
           Need assistance? Contact <span className="text-foreground font-medium">Veloura Systems Admin</span>
         </p>

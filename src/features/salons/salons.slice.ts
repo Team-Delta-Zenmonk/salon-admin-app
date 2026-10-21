@@ -11,8 +11,10 @@ export interface SalonsState {
   page: number;
   limit: number;
   totalPages: number;
+  hasMore: boolean;
   filters: ListSalonsParams;
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
   actionMessage: string | null;
 }
@@ -23,6 +25,7 @@ const initialState: SalonsState = {
   page: 1,
   limit: 20,
   totalPages: 1,
+  hasMore: false,
   filters: {
     page: 1,
     limit: 20,
@@ -31,6 +34,7 @@ const initialState: SalonsState = {
     search: undefined,
   },
   isLoading: false,
+  isLoadingMore: false,
   error: null,
   actionMessage: null,
 };
@@ -44,6 +48,11 @@ export const salonsSlice = createSlice({
     },
     resetFilters(state) {
       state.filters = { page: 1, limit: 20, status: undefined, is_active: undefined, search: undefined };
+      state.data = [];
+      state.total = 0;
+      state.page = 1;
+      state.totalPages = 1;
+      state.hasMore = false;
     },
     clearActionMessage(state) {
       state.actionMessage = null;
@@ -51,23 +60,46 @@ export const salonsSlice = createSlice({
     clearSalonsError(state) {
       state.error = null;
     },
+    resetSalonsData(state) {
+      state.data = [];
+      state.total = 0;
+      state.page = 1;
+      state.totalPages = 1;
+      state.hasMore = false;
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(listSalonsAction.pending, (state) => {
-        state.isLoading = true;
+      .addCase(listSalonsAction.pending, (state, action) => {
+        const page = action.meta.arg?.page ?? state.filters.page ?? 1;
+        state.filters = { ...state.filters, ...(action.meta.arg || {}) };
+        if (page > 1) {
+          state.isLoadingMore = true;
+        } else {
+          state.isLoading = true;
+        }
         state.error = null;
       })
       .addCase(listSalonsAction.fulfilled, (state, { payload }) => {
         state.isLoading = false;
-        state.data = payload.salons;
+        state.isLoadingMore = false;
+        const page = payload.pagination.page;
+        if (page === 1) {
+          state.data = payload.salons;
+        } else {
+          const existingIds = new Set(state.data.map((s) => s.uuid));
+          const newSalons = payload.salons.filter((s) => !existingIds.has(s.uuid));
+          state.data = [...state.data, ...newSalons];
+        }
         state.total = payload.pagination.total;
         state.page = payload.pagination.page;
         state.limit = payload.pagination.limit;
         state.totalPages = payload.pagination.totalPages;
+        state.hasMore = payload.pagination.page < payload.pagination.totalPages;
       })
       .addCase(listSalonsAction.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingMore = false;
         state.error = (action.payload as string) || "Failed to load salons";
       });
 
@@ -114,5 +146,5 @@ export const salonsSlice = createSlice({
   },
 });
 
-export const { setFilters, resetFilters, clearActionMessage, clearSalonsError } = salonsSlice.actions;
+export const { setFilters, resetFilters, resetSalonsData, clearActionMessage, clearSalonsError } = salonsSlice.actions;
 export default salonsSlice.reducer;

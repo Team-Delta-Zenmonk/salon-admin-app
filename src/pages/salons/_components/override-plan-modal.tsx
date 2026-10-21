@@ -153,7 +153,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
       description={`Grant or adjust subscription entitlement for "${salon.name}".`}
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div className="rounded-xl border border-border bg-background p-4 flex items-center justify-between text-xs">
           <div>
             <span className="text-muted-foreground block">Current Plan:</span>

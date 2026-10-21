@@ -29,7 +29,6 @@ export const SalonCard: React.FC<SalonCardProps> = ({
 
   return (
     <div className="p-4 sm:p-5 hover:bg-muted/20 transition-colors flex flex-col justify-between gap-3 text-left">
-      {/* Top: Name & Subdomain + Badges */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <EllipsisCell
@@ -62,7 +61,6 @@ export const SalonCard: React.FC<SalonCardProps> = ({
         </div>
       </div>
 
-      {/* Middle Details Grid */}
       <div className="grid grid-cols-2 gap-2 text-xs p-2.5 rounded-lg bg-muted/40 border border-border/40">
         <div className="min-w-0 space-y-0.5">
           <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
@@ -110,13 +108,12 @@ export const SalonCard: React.FC<SalonCardProps> = ({
             </div>
           ) : (
             <p className="text-muted-foreground text-[11px]">
-              Not specified
+              No Expiry
             </p>
           )}
         </div>
       </div>
 
-      {/* Footer: Date & Quick Actions */}
       <div className="space-y-2 pt-1 border-t border-border/40">
         <div className="flex items-center justify-between text-[10px] text-muted-foreground">
           <span>Joined</span>

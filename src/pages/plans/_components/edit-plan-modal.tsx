@@ -95,7 +95,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
       description="Update pricing and details for new tenant subscriptions."
       maxWidth="md"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         {error && (
           <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" />
@@ -115,7 +115,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
           </label>
           <div className="relative">
             <IndianRupee className="absolute left-3 top-[50%] z-1 h-4 w-4 text-muted-foreground translate-y-[-50%]" />
-            <Input type="number" step="1" min="0" className="pl-9" {...register("amount")} placeholder="e.g. 2499" />
+            <Input type="number" step="1" className="pl-9" {...register("amount")} placeholder="e.g. 2499" />
           </div>
           {errors.amount ? (
             <p className="mt-1 text-xs text-destructive">{errors.amount.message}</p>
@@ -132,11 +132,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
           </label>
           <Input
             type="number"
-            min="1"
-            {...register("duration_days", {
-              required: "Duration days is required",
-              min: { value: 1, message: "Duration must be at least 1 day" },
-            })}
+            {...register("duration_days")}
             placeholder="e.g. 14, 30, 90, 365"
           />
           {errors.duration_days && (

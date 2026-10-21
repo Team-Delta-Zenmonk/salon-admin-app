@@ -40,7 +40,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
     const padding = 8;
 
     if (side === "top") {
-      // Flip to bottom if clipping top edge
       if (rect.top - tooltipHeight - 6 < padding) {
         top = rect.bottom + 6;
       } else {
@@ -48,7 +47,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
       }
       left = rect.left + rect.width / 2 - tooltipWidth / 2;
     } else if (side === "bottom") {
-      // Flip to top if clipping bottom edge
       if (rect.bottom + tooltipHeight + 6 > window.innerHeight - padding) {
         top = rect.top - tooltipHeight - 6;
       } else {

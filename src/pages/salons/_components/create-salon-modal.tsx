@@ -479,7 +479,6 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
                 />
               </div>
 
-              {/* Dynamic Calculation Breakdown */}
               {numericDiscountValue > 0 && (
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs space-y-1.5">
                   <div className="flex items-center justify-between text-muted-foreground">
