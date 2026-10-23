@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
-  description?: string;
+  title: React.ReactNode;
+  description?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl";
@@ -65,19 +65,19 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby="modal-title"
         className={cn(
-          "relative z-10 w-full max-h-[calc(100dvh-1.75rem)] sm:max-h-[calc(100dvh-3.5rem)] flex flex-col rounded-lg border border-border bg-card text-foreground shadow-2xl transition-all my-auto",
+          "relative z-10 w-full max-h-[calc(100dvh-1.75rem)] sm:max-h-[calc(100dvh-3.5rem)] flex flex-col rounded-lg border border-border bg-card text-foreground shadow-2xl transition-all my-auto min-w-0 overflow-hidden",
           maxWidthClasses
         )}
       >
-        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3.5 sm:px-6 sm:py-4">
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3.5 sm:px-6 sm:py-4 min-w-0">
           <div className="min-w-0 flex-1 pr-1">
-            <h3 id="modal-title" className="text-base sm:text-lg font-bold text-foreground tracking-tight break-words">
+            <h3 id="modal-title" className="text-base sm:text-lg font-bold text-foreground tracking-tight break-words [overflow-wrap:anywhere]">
               {title}
             </h3>
             {description && (
-              <p className="mt-1 text-xs sm:text-sm text-muted-foreground break-words">
+              <div className="mt-1 text-xs sm:text-sm text-muted-foreground break-words [overflow-wrap:anywhere]">
                 {description}
-              </p>
+              </div>
             )}
           </div>
           <button
@@ -100,12 +100,12 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5 overscroll-contain">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 px-4 py-4 sm:px-6 sm:py-5 overscroll-contain">
           {children}
         </div>
 
         {footer && (
-          <div className="flex shrink-0 items-center justify-end gap-3 border-t border-border px-4 py-3 sm:px-6 sm:py-4 bg-muted/20">
+          <div className="flex shrink-0 items-center justify-end gap-3 border-t border-border px-4 py-3 sm:px-6 sm:py-4 bg-muted/20 min-w-0">
             {footer}
           </div>
         )}

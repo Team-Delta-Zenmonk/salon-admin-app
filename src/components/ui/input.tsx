@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { EllipsisCell } from "@/components/ui/ellipsis-cell";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
+  label?: React.ReactNode;
   error?: string;
   helperText?: React.ReactNode;
   leftIcon?: React.ReactNode;
@@ -12,7 +12,8 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type = "text", label, error, helperText, leftIcon, rightIcon, id, value, title, ...props }, ref) => {
-    const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+    const generatedId = React.useId();
+    const inputId = id || (typeof label === "string" ? label.toLowerCase().replace(/[^a-z0-9]+/g, "-") : generatedId);
     const valString = value !== undefined && value !== null ? String(value) : "";
     const computedTitle = title ?? (valString ? valString : undefined);
 

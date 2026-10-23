@@ -20,11 +20,15 @@ export const createSalonAction = createAsyncThunk<
     return res;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Unable to provision salon"
-      );
+      const data = err.response?.data;
+      const errorMessage =
+        (typeof data === "string" && data.trim()) ||
+        data?.error ||
+        data?.message ||
+        data?.detail ||
+        err.message ||
+        "Unable to provision salon";
+      return thunkAPI.rejectWithValue(errorMessage);
     }
     return thunkAPI.rejectWithValue("An unexpected error occurred");
   }

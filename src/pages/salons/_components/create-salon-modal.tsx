@@ -54,6 +54,7 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
     handleSubmit,
     watch,
     setValue,
+    setError: setFormError,
     trigger,
     reset,
     formState: { errors },
@@ -202,7 +203,14 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
       handleClose(true);
       showSnackbar("Salon provisioned successfully");
     } catch (err: any) {
-      setError(typeof err === "string" ? err : "Failed to provision salon");
+      const errorMsg = typeof err === "string" ? err : "Failed to provision salon";
+      setError(errorMsg);
+      showSnackbar(errorMsg, "error");
+      if (/email/i.test(errorMsg)) {
+        setFormError("email", { type: "server", message: errorMsg });
+      } else if (/slug|subdomain/i.test(errorMsg)) {
+        setFormError("slug", { type: "server", message: errorMsg });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -289,7 +297,12 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
           />
 
           <Input
-            label="Phone Number"
+            label={
+              <span>
+                Phone Number <span className="text-muted-foreground font-normal">(Optional)</span>
+              </span>
+            }
+            id="phone"
             type="tel"
             placeholder="+1 (555) 019-2834"
             {...register("phone")}

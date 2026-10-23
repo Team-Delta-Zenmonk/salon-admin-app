@@ -23,6 +23,7 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
   const dispatch = useAppDispatch();
   const { isLoading, error, successMessage } = useAppSelector((state) => state.plans);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCodeModified, setIsCodeModified] = useState(false);
 
   const isBusy = isLoading || isSubmitting;
 
@@ -49,20 +50,24 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
   const nameValue = watch("name");
 
   useEffect(() => {
-    if (nameValue) {
-      const slug = nameValue
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s_-]/g, "")
-        .replace(/[\s_-]+/g, "_");
-      setValue("code", slug, { shouldValidate: true });
-    }
-  }, [nameValue, setValue]);
+    if (isCodeModified) return;
+
+    const slug = nameValue
+      ? nameValue
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\s_-]/g, "")
+          .replace(/[\s_-]+/g, "_")
+      : "";
+
+    setValue("code", slug, { shouldValidate: !!nameValue });
+  }, [nameValue, isCodeModified, setValue]);
 
   const handleClose = (force = false) => {
     if (isBusy && !force) return;
     dispatch(clearPlansError());
     dispatch(clearPlansSuccessMessage());
+    setIsCodeModified(false);
     reset();
     onClose();
   };
@@ -136,7 +141,16 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
             Code / Unique Identifier (Auto-generated) *
           </label>
           <Input
-            {...register("code")}
+            {...register("code", {
+              onChange: (e) => {
+                const val = e.target.value;
+                if (val.trim() !== "") {
+                  setIsCodeModified(true);
+                } else {
+                  setIsCodeModified(false);
+                }
+              },
+            })}
             placeholder="e.g. quarterly_pro"
           />
           {errors.code ? (
