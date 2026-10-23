@@ -87,7 +87,7 @@ export const PlansPage: React.FC = () => {
                   <EllipsisCell as="span" value={plan.name} />
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground break-words leading-relaxed">
-                  {plan.description}
+                  <EllipsisCell as="span" value={plan.description} />
                 </CardDescription>
               </CardHeader>
 

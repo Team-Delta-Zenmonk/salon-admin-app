@@ -30,7 +30,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<EditPlanForm>({
     resolver: zodResolver(getEditPlanSchema(planCode)),
     mode: "onChange",
@@ -163,7 +163,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
           <Button type="button" variant="outline" onClick={() => handleClose()} disabled={isBusy}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isBusy} isLoading={isBusy}>
+          <Button type="submit" disabled={isBusy || !isDirty} isLoading={isBusy}>
             {isBusy ? "Saving..." : "Save Plan Pricing"}
           </Button>
         </div>

@@ -12,10 +12,13 @@ export const createPlanSchema = z
       .trim()
       .min(1, "Required")
       .max(50, "Plan code cannot exceed 50 characters")
-      .regex(/^[a-z0-9_]+$/, "Code must contain only lowercase letters, numbers, and underscores"),
+      .regex(/^[a-z0-9_]+$/, "Code must contain only lowercase letters, numbers, and underscores")
+      .refine((val) => val.toLowerCase().trim() !== "trial", {
+        message: "Code 'trial' is a reserved system tier and cannot be created",
+      }),
     amount: z.coerce
       .number({ required_error: "Required", invalid_type_error: "Amount must be a number" })
-      .min(0, "Price amount cannot be negative"),
+      .positive("Price amount must be greater than 0"),
     duration_days: z.coerce
       .number({ required_error: "Required", invalid_type_error: "Duration days must be a number" })
       .int("Duration must be an integer number of days")
@@ -35,12 +38,11 @@ export const createPlanSchema = z
       .or(z.literal("")),
   })
   .superRefine((data, ctx) => {
-    const isFreeTier = data.code.toLowerCase().trim() === "trial";
-    if (!isFreeTier && data.amount <= 0) {
+    if (data.code.toLowerCase().trim() === "trial" || data.name.toLowerCase().trim() === "trial") {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["amount"],
-        message: "Zero price (₹0) is only allowed for the free trial tier (code: trial)",
+        path: ["code"],
+        message: "Plan code 'trial' is a reserved system tier and cannot be created",
       });
     }
   });

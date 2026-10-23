@@ -12,9 +12,10 @@ import { updateSalonPlanAction } from "@/features/salons/update-salon-plan/updat
 import { fetchSubscriptionPlans } from "@/features/plans/plans.action";
 import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS, type SubscriptionPlan } from "@/common/enums/subscription.enum";
 import { showSnackbar } from "@/components/ui/snackbar";
+import { EllipsisCell } from "@/components/ui/ellipsis-cell";
 
 const overridePlanSchema = z.object({
-  selectedPlan: z.enum([SUBSCRIPTION_PLAN.MONTHLY, SUBSCRIPTION_PLAN.YEARLY] as const),
+  selectedPlan: z.string().min(1, "Please select a plan"),
   durationDays: z.coerce.number().min(1, "Minimum 1 day"),
 });
 
@@ -36,8 +37,8 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const defaultPlan = salon?.subscription_plan === SUBSCRIPTION_PLAN.YEARLY 
-    ? SUBSCRIPTION_PLAN.YEARLY 
+  const defaultPlan = (salon?.subscription_plan && salon.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL)
+    ? salon.subscription_plan
     : SUBSCRIPTION_PLAN.MONTHLY;
 
   const {
@@ -59,10 +60,12 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
 
   useEffect(() => {
     if (isOpen && salon) {
+      const initialPlan = (salon.subscription_plan && salon.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL)
+        ? salon.subscription_plan
+        : SUBSCRIPTION_PLAN.MONTHLY;
+
       reset({
-        selectedPlan: salon.subscription_plan === SUBSCRIPTION_PLAN.YEARLY 
-          ? SUBSCRIPTION_PLAN.YEARLY 
-          : SUBSCRIPTION_PLAN.MONTHLY,
+        selectedPlan: initialPlan,
         durationDays: 30,
       });
       setError(null);
@@ -75,7 +78,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   if (!salon) return null;
 
   const planTiers = backendPlans.map((p) => ({
-    id: p.id as typeof SUBSCRIPTION_PLAN.MONTHLY | typeof SUBSCRIPTION_PLAN.YEARLY,
+    id: p.id,
     name: p.name,
     price: `${p.formatted_price} ${p.billing_cycle}`,
     features: p.description,
@@ -112,7 +115,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
       setError(null);
 
       const payload: {
-        subscription_plan: SubscriptionPlan;
+        subscription_plan: SubscriptionPlan | string;
         subscription_status: typeof SUBSCRIPTION_STATUS.ACTIVE;
         extend_subscription_days?: number;
         duration_days?: number;
@@ -180,20 +183,17 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
                 <div
                   key={tier.id}
                   onClick={() => setValue("selectedPlan", tier.id, { shouldValidate: true })}
-                  className={`cursor-pointer rounded-xl border p-3.5 transition-all relative ${
-                    isSelected
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border bg-card hover:border-foreground/30"
-                  }`}
+                  className={`cursor-pointer rounded-xl border p-3.5 transition-all relative ${isSelected
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border bg-card hover:border-foreground/30"
+                    }`}
                 >
                   {isSelected && (
                     <CheckCircle2 className="h-4 w-4 text-primary absolute top-3 right-3" />
                   )}
-                  <p className="text-sm font-bold text-foreground">{tier.name}</p>
+                  <EllipsisCell value={tier.name} className="text-sm font-bold text-foreground" />
                   <p className="text-xs font-semibold text-primary mt-0.5">{tier.price}</p>
-                  <p className="text-[11px] text-muted-foreground mt-2 line-clamp-2">
-                    {tier.features}
-                  </p>
+                  <EllipsisCell value={tier.features} className="text-[11px] text-muted-foreground mt-2 line-clamp-2" maxLines={2} />
                 </div>
               );
             })}
@@ -213,11 +213,10 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
                 key={opt.days}
                 type="button"
                 onClick={() => setValue("durationDays", opt.days, { shouldValidate: true })}
-                className={`flex items-center justify-center gap-1.5 rounded-lg border py-2 px-2 text-xs font-semibold transition-all cursor-pointer ${
-                  watchDurationDays === opt.days
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card text-foreground hover:bg-muted"
-                }`}
+                className={`flex items-center justify-center gap-1.5 rounded-lg border py-2 px-2 text-xs font-semibold transition-all cursor-pointer ${watchDurationDays === opt.days
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-card text-foreground hover:bg-muted"
+                  }`}
               >
                 <Calendar className="h-3.5 w-3.5" />
                 {opt.label}

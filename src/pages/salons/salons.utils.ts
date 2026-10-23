@@ -7,7 +7,7 @@ export const isSalonSuspended = (salon: SalonItem): boolean => {
 };
 
 export const getSalonStatusBadgeVariant = (salon: SalonItem): BadgeProps["variant"] => {
-  if (isSalonSuspended(salon)) return "suspended";
+  if (isSalonSuspended(salon)) return "default";
   if (salon.subscription_status === "active") return "active";
   if (salon.subscription_status === "trial") return "trial";
   return "expired";

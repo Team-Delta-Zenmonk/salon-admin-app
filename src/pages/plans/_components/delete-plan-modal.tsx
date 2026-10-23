@@ -6,6 +6,7 @@ import { deleteSubscriptionPlan, clearPlansError, clearPlansSuccessMessage } fro
 import type { BackendPlan } from "@/features/salons/list-salons/list-salons.service";
 import { AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { showSnackbar } from "@/components/ui/snackbar";
+import { EllipsisCell } from "@/components/ui/ellipsis-cell";
 
 interface DeletePlanModalProps {
   isOpen: boolean;
@@ -80,7 +81,8 @@ export const DeletePlanModal: React.FC<DeletePlanModalProps> = ({
           <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
             <p className="font-bold text-foreground">
-              Are you sure you want to permanently delete plan "{plan.name}" ({plan.code || plan.id})?
+              Are you sure you want to permanently delete plan 
+              <EllipsisCell value={plan.name} maxChars={15}/>{" "}({plan.code || plan.id})?
             </p>
             <p className="text-muted-foreground">
               This is a <strong>hard delete</strong> operation. The plan record will be completely purged from the database table.

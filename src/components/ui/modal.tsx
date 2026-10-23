@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EllipsisCell } from "./ellipsis-cell";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -71,8 +72,8 @@ export const Modal: React.FC<ModalProps> = ({
       >
         <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3.5 sm:px-6 sm:py-4 min-w-0">
           <div className="min-w-0 flex-1 pr-1">
-            <h3 id="modal-title" className="text-base sm:text-lg font-bold text-foreground tracking-tight break-words [overflow-wrap:anywhere]">
-              {title}
+            <h3 id="modal-title" className="text-base sm:text-lg font-bold text-foreground tracking-tight break-words">
+              <EllipsisCell value={title?.toString() ?? ""} />
             </h3>
             {description && (
               <div className="mt-1 text-xs sm:text-sm text-muted-foreground break-words [overflow-wrap:anywhere]">

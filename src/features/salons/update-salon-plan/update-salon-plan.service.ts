@@ -3,8 +3,8 @@ import type { SalonItem } from "../list-salons/list-salons.service";
 import type { SubscriptionPlan, SubscriptionStatus } from "@/common/enums/subscription.enum";
 
 export interface UpdateSalonPlanPayload {
-  subscription_plan?: SubscriptionPlan;
-  subscription_status?: SubscriptionStatus;
+  subscription_plan?: SubscriptionPlan | string;
+  subscription_status?: SubscriptionStatus | string;
   duration_days?: number;
   extend_trial_days?: number;
   extend_subscription_days?: number;
