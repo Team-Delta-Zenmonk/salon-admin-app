@@ -59,7 +59,7 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
     reset,
     formState: { errors },
   } = useForm<CreateSalonForm>({
-    resolver: zodResolver(createSalonSchema),
+    resolver: zodResolver(createSalonSchema(backendPlans)),
     mode: "onChange",
     defaultValues: {
       name: "",
@@ -102,8 +102,8 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
   const isPaidPlan = watchPlan !== SUBSCRIPTION_PLAN.TRIAL;
 
   const currentBasePrice =
-    backendPlans.find((p) => p.id === watchPlan)?.amount ||
-    (isPaidPlan ? PLAN_BASE_PRICES[watchPlan] : 0) ||
+    backendPlans.find((p) => p.id === watchPlan || p.code === watchPlan)?.amount ||
+    (isPaidPlan ? PLAN_BASE_PRICES[watchPlan as keyof typeof PLAN_BASE_PRICES] || 0 : 0) ||
     0;
 
   const numericDiscountValue =
@@ -179,9 +179,9 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
 
       const discountDetails = hasValidDiscount
         ? {
-            type: data.discount_type,
-            value: Number(data.discount_value),
-          }
+          type: data.discount_type,
+          value: Number(data.discount_value),
+        }
         : null;
 
       await dispatch(
@@ -359,11 +359,10 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
                     setValue("plan", plan.id, { shouldValidate: true });
                     trigger("discount_value");
                   }}
-                  className={`cursor-pointer rounded-xl border p-3 transition-all relative flex flex-col justify-between ${
-                    isSelected
+                  className={`cursor-pointer rounded-xl border p-3 transition-all relative flex flex-col justify-between ${isSelected
                       ? "border-primary bg-primary/5 ring-1 ring-primary shadow-xs"
                       : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
-                  }`}
+                    }`}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center justify-between gap-1 mb-1">
@@ -381,9 +380,13 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
                       )}
                     </div>
                     <p className="text-xs font-bold text-primary break-words">{plan.price}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1 leading-snug break-words">
-                      {plan.description}
-                    </p>
+                    <EllipsisCell
+                      as="span"
+                      value={plan.description}
+                      className="text-[11px] text-muted-foreground mt-1 leading-snug break-words"
+                      wrapperClassName="min-w-0 flex-1"
+                      maxChars={50}
+                    />
                   </div>
                 </div>
               );
@@ -433,11 +436,10 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
                       });
                       trigger(["discount_type", "discount_value"]);
                     }}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                      watchDiscountType === DISCOUNT_TYPE.MANUAL
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer ${watchDiscountType === DISCOUNT_TYPE.MANUAL
                         ? "bg-background text-foreground shadow-xs border border-border"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     <IndianRupee className="h-3.5 w-3.5 text-primary" />
                     Manual Amount (₹)
@@ -452,11 +454,10 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
                       });
                       trigger(["discount_type", "discount_value"]);
                     }}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                      watchDiscountType === DISCOUNT_TYPE.PERCENTAGE
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer ${watchDiscountType === DISCOUNT_TYPE.PERCENTAGE
                         ? "bg-background text-foreground shadow-xs border border-border"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     <Percent className="h-3.5 w-3.5 text-primary" />
                     Percentage (%)

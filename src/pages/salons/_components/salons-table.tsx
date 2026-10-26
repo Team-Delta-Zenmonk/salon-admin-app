@@ -89,7 +89,8 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
           </thead>
           <tbody className="divide-y divide-border font-sans">
             {salons.map((salon) => {
-              const { targetDate, countdown, isSuspended } = getSalonExpiryCountdown(salon);
+              const { targetDate, countdown, isSuspended, hasCombinedExpiry, trialEndsAt } =
+                getSalonExpiryCountdown(salon);
 
               return (
                 <tr
@@ -155,8 +156,13 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                           {countdown.text}
                         </span>
                         <div className="text-[10px] text-muted-foreground">
-                          {formatDate(targetDate)}
+                          Plan: {formatDate(targetDate)}
                         </div>
+                        {hasCombinedExpiry && trialEndsAt && (
+                          <div className="text-[9px] text-muted-foreground/80 mt-0.5 font-mono">
+                            Trial: {formatDate(trialEndsAt)}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <span className="text-muted-foreground">No Expiry</span>

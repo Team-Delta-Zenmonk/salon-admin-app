@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EllipsisCell } from "./ellipsis-cell";
@@ -24,13 +24,30 @@ export const Modal: React.FC<ModalProps> = ({
   maxWidth = "md",
   preventClose = false,
 }) => {
+  const [mounted, setMounted] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setMounted(true);
+      setIsClosing(false);
+    } else if (mounted) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setMounted(false);
+        setIsClosing(false);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, mounted]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen && !preventClose) {
         onClose();
       }
     };
-    if (isOpen) {
+    if (mounted) {
       document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleKeyDown);
     }
@@ -38,9 +55,9 @@ export const Modal: React.FC<ModalProps> = ({
       document.body.style.overflow = "unset";
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, onClose, preventClose]);
+  }, [mounted, isOpen, onClose, preventClose]);
 
-  if (!isOpen) return null;
+  if (!mounted) return null;
 
   const maxWidthClasses = {
     sm: "max-w-sm",
@@ -52,7 +69,10 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex min-h-full items-center justify-center">
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+        className={cn(
+          "fixed inset-0 bg-black/60 backdrop-blur-xs",
+          isClosing ? "animate-modal-backdrop-out" : "animate-modal-backdrop-in"
+        )}
         onClick={() => {
           if (!preventClose) {
             onClose();
@@ -66,8 +86,9 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby="modal-title"
         className={cn(
-          "relative z-10 w-full max-h-[calc(100dvh-1.75rem)] sm:max-h-[calc(100dvh-3.5rem)] flex flex-col rounded-lg border border-border bg-card text-foreground shadow-2xl transition-all my-auto min-w-0 overflow-hidden",
-          maxWidthClasses
+          "relative z-10 w-full max-h-[calc(100dvh-1.75rem)] sm:max-h-[calc(100dvh-3.5rem)] flex flex-col rounded-lg border border-border bg-card text-foreground shadow-2xl my-auto min-w-0 overflow-hidden",
+          maxWidthClasses,
+          isClosing ? "animate-modal-content-out" : "animate-modal-content-in"
         )}
       >
         <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3.5 sm:px-6 sm:py-4 min-w-0">

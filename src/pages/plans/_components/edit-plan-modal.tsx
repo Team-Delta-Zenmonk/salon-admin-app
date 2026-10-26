@@ -30,6 +30,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
     register,
     handleSubmit,
     reset,
+    clearErrors,
     formState: { errors, isDirty },
   } = useForm<EditPlanForm>({
     resolver: zodResolver(getEditPlanSchema(planCode)) as unknown as Resolver<EditPlanForm>,
@@ -37,6 +38,22 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
   });
 
   useEffect(() => {
+    if (isOpen && plan) {
+      reset({
+        amount: plan.amount,
+        name: plan.name,
+        description: plan.description || "",
+        billing_cycle: plan.billing_cycle || "",
+        duration_days: plan.duration_days || 30,
+      });
+      clearErrors();
+    }
+  }, [isOpen, plan, reset, clearErrors]);
+
+  const handleClose = (force = false) => {
+    if (isBusy && !force) return;
+    dispatch(clearPlansError());
+    dispatch(clearPlansSuccessMessage());
     if (plan) {
       reset({
         amount: plan.amount,
@@ -45,13 +62,8 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
         billing_cycle: plan.billing_cycle || "",
         duration_days: plan.duration_days || 30,
       });
+      clearErrors();
     }
-  }, [plan, reset]);
-
-  const handleClose = (force = false) => {
-    if (isBusy && !force) return;
-    dispatch(clearPlansError());
-    dispatch(clearPlansSuccessMessage());
     onClose();
   };
 

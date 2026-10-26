@@ -25,7 +25,8 @@ export const SalonCard: React.FC<SalonCardProps> = ({
   onOverridePlan,
   onToggleStatus,
 }) => {
-  const { targetDate, countdown, isSuspended } = getSalonExpiryCountdown(salon);
+  const { targetDate, countdown, isSuspended, hasCombinedExpiry, trialEndsAt } =
+    getSalonExpiryCountdown(salon);
 
   return (
     <div className="p-4 sm:p-5 hover:bg-muted/20 transition-colors flex flex-col justify-between gap-3 text-left">
@@ -103,8 +104,13 @@ export const SalonCard: React.FC<SalonCardProps> = ({
                 {countdown.text}
               </p>
               <p className="text-[10px] text-muted-foreground">
-                {formatDate(targetDate)}
+                Plan: {formatDate(targetDate)}
               </p>
+              {hasCombinedExpiry && trialEndsAt && (
+                <p className="text-[9px] text-muted-foreground/80 mt-0.5 font-mono">
+                  Trial: {formatDate(trialEndsAt)}
+                </p>
+              )}
             </div>
           ) : (
             <p className="text-muted-foreground text-[11px]">

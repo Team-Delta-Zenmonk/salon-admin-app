@@ -37,6 +37,10 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const initialSelectedPlan = salon?.subscription_plan && salon.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL
+    ? salon.subscription_plan
+    : "";
+
   const {
     handleSubmit,
     watch,
@@ -46,7 +50,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   } = useForm<OverridePlanForm>({
     resolver: zodResolver(overridePlanSchema),
     defaultValues: {
-      selectedPlan: "",
+      selectedPlan: initialSelectedPlan,
       durationDays: 30,
     },
   });
@@ -56,8 +60,11 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
 
   useEffect(() => {
     if (isOpen && salon) {
+      const currentPlan = salon.subscription_plan && salon.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL
+        ? salon.subscription_plan
+        : (backendPlans[0]?.id || "");
       reset({
-        selectedPlan: "",
+        selectedPlan: currentPlan,
         durationDays: 30,
       });
       setError(null);
@@ -68,8 +75,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   const backendPlans = allBackendPlans.filter((p) => p.id !== SUBSCRIPTION_PLAN.TRIAL);
 
   const isPlansReady = backendPlans.length > 0 && !isLoadingPlans;
-  const isTargetSelected = Boolean(watchSelectedPlan && backendPlans.some((p) => p.id === watchSelectedPlan));
-  const showSkeleton = !isPlansReady || !isTargetSelected;
+  const showSkeleton = !isPlansReady;
 
   useEffect(() => {
     if (isOpen && salon && isPlansReady && !watchSelectedPlan) {

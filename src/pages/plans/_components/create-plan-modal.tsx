@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
     setValue,
     formState: { errors },
   } = useForm<CreatePlanForm>({
-    resolver: zodResolver(createPlanSchema),
+    resolver: zodResolver(createPlanSchema) as unknown as Resolver<CreatePlanForm>,
     mode: "onChange",
     defaultValues: {
       name: "",
