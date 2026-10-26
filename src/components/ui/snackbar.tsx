@@ -74,7 +74,7 @@ export const SnackbarContainer: React.FC = () => {
                 <Sparkles className="h-4 w-4" />
               </div>
             )}
-            <span className="truncate leading-snug font-semibold text-foreground">{m.message}</span>
+            <span className="leading-snug font-semibold text-foreground">{m.message}</span>
           </div>
           <button
             type="button"
