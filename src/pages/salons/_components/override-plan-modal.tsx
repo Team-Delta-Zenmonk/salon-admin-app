@@ -33,13 +33,9 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   salon,
 }) => {
   const dispatch = useAppDispatch();
-  const { plans: allBackendPlans } = useAppSelector((state) => state.plans);
+  const { plans: allBackendPlans, isLoading: isLoadingPlans } = useAppSelector((state) => state.plans);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const defaultPlan = (salon?.subscription_plan && salon.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL)
-    ? salon.subscription_plan
-    : SUBSCRIPTION_PLAN.MONTHLY;
 
   const {
     handleSubmit,
@@ -50,7 +46,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   } = useForm<OverridePlanForm>({
     resolver: zodResolver(overridePlanSchema),
     defaultValues: {
-      selectedPlan: defaultPlan,
+      selectedPlan: "",
       durationDays: 30,
     },
   });
@@ -60,12 +56,8 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
 
   useEffect(() => {
     if (isOpen && salon) {
-      const initialPlan = (salon.subscription_plan && salon.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL)
-        ? salon.subscription_plan
-        : SUBSCRIPTION_PLAN.MONTHLY;
-
       reset({
-        selectedPlan: initialPlan,
+        selectedPlan: "",
         durationDays: 30,
       });
       setError(null);
@@ -74,6 +66,20 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   }, [isOpen, reset, salon, dispatch]);
 
   const backendPlans = allBackendPlans.filter((p) => p.id !== SUBSCRIPTION_PLAN.TRIAL);
+
+  const isPlansReady = backendPlans.length > 0 && !isLoadingPlans;
+  const isTargetSelected = Boolean(watchSelectedPlan && backendPlans.some((p) => p.id === watchSelectedPlan));
+  const showSkeleton = !isPlansReady || !isTargetSelected;
+
+  useEffect(() => {
+    if (isOpen && salon && isPlansReady && !watchSelectedPlan) {
+      const matchPlan = backendPlans.find((p) => p.id === salon.subscription_plan);
+      const chosenPlan = matchPlan ? matchPlan.id : backendPlans[0]?.id || "";
+      if (chosenPlan) {
+        setValue("selectedPlan", chosenPlan, { shouldValidate: true });
+      }
+    }
+  }, [isOpen, salon, isPlansReady, backendPlans, watchSelectedPlan, setValue]);
 
   if (!salon) return null;
 
@@ -176,28 +182,46 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
           <label className="block text-xs font-semibold tracking-wide text-foreground mb-2.5">
             Select Entitlement Tier
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {planTiers.map((tier) => {
-              const isSelected = watchSelectedPlan === tier.id;
-              return (
+          {showSkeleton ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[1, 2].map((idx) => (
                 <div
-                  key={tier.id}
-                  onClick={() => setValue("selectedPlan", tier.id, { shouldValidate: true })}
-                  className={`cursor-pointer rounded-xl border p-3.5 transition-all relative ${isSelected
-                    ? "border-primary bg-primary/5 ring-1 ring-primary"
-                    : "border-border bg-card hover:border-foreground/30"
-                    }`}
+                  key={idx}
+                  className="rounded-xl border border-border bg-card p-3.5 space-y-2.5 animate-pulse"
                 >
-                  {isSelected && (
-                    <CheckCircle2 className="h-4 w-4 text-primary absolute top-3 right-3" />
-                  )}
-                  <EllipsisCell value={tier.name} className="text-sm font-bold text-foreground" />
-                  <p className="text-xs font-semibold text-primary mt-0.5">{tier.price}</p>
-                  <EllipsisCell value={tier.features} className="text-[11px] text-muted-foreground mt-2 line-clamp-2" maxLines={2} />
+                  <div className="h-4 w-28 bg-muted rounded" />
+                  <div className="h-3.5 w-20 bg-muted/70 rounded" />
+                  <div className="space-y-1.5 pt-1">
+                    <div className="h-3 w-full bg-muted/50 rounded" />
+                    <div className="h-3 w-3/4 bg-muted/50 rounded" />
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {planTiers.map((tier) => {
+                const isSelected = watchSelectedPlan === tier.id;
+                return (
+                  <div
+                    key={tier.id}
+                    onClick={() => setValue("selectedPlan", tier.id, { shouldValidate: true })}
+                    className={`cursor-pointer rounded-xl border p-3.5 transition-all relative ${isSelected
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      : "border-border bg-card hover:border-foreground/30"
+                      }`}
+                  >
+                    {isSelected && (
+                      <CheckCircle2 className="h-4 w-4 text-primary absolute top-3 right-3" />
+                    )}
+                    <EllipsisCell value={tier.name} className="text-sm font-bold text-foreground" />
+                    <p className="text-xs font-semibold text-primary mt-0.5">{tier.price}</p>
+                    <EllipsisCell value={tier.features} className="text-[11px] text-muted-foreground mt-2 line-clamp-2" maxLines={2} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {errors.selectedPlan?.message && (
             <p className="mt-1 text-xs text-destructive">{errors.selectedPlan.message}</p>
           )}
