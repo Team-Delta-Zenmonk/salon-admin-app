@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
     reset,
     formState: { errors, isDirty },
   } = useForm<EditPlanForm>({
-    resolver: zodResolver(getEditPlanSchema(planCode)),
+    resolver: zodResolver(getEditPlanSchema(planCode)) as unknown as Resolver<EditPlanForm>,
     mode: "onChange",
   });
 
@@ -65,7 +65,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
           payload: {
             amount: Number(data.amount),
             name: data.name,
-            description: data.description || undefined,
+            description: data.description ? data.description.trim() : null,
             billing_cycle: data.billing_cycle || undefined,
             duration_days: Number(data.duration_days),
           },

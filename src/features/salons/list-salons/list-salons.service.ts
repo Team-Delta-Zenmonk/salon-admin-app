@@ -63,7 +63,7 @@ export const getSubscriptionPlansService = async (): Promise<BackendPlan[]> => {
 export interface UpdatePlanPayload {
   amount?: number;
   name?: string;
-  description?: string;
+  description?: string | null;
   billing_cycle?: string;
   duration_days?: number;
   code?: string;
