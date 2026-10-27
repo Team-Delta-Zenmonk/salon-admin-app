@@ -90,6 +90,7 @@ export const LoginPage: React.FC = () => {
               label="Secret Key / Password"
               type={showPassword ? "text" : "password"}
               placeholder="••••••••••••"
+              className="placeholder:opacity-50"
               {...register("password")}
               error={errors.password?.message}
               leftIcon={<Lock className="h-4 w-4" />}
