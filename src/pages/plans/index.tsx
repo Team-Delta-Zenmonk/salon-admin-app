@@ -50,19 +50,10 @@ export const PlansPage: React.FC = () => {
           <Button
             size="sm"
             onClick={() => setCreateModalOpen(true)}
+            className="gap-1.5"
           >
-            <Plus className="h-4 w-4 mr-1.5" />
-            Create Plan
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => dispatch(fetchSubscriptionPlans())}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
+            <Plus className="h-4 w-4 shrink-0" />
+            <span>Create Plan</span>
           </Button>
         </div>
       </div>
@@ -136,16 +127,16 @@ export const PlansPage: React.FC = () => {
                     className="flex-1 font-semibold shadow-xs gap-1.5"
                     onClick={() => handleEditPlan(plan)}
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-4 w-4 shrink-0" />
                     <span>Edit Pricing</span>
                   </Button>
                   <Button
                     variant="outline"
-                    className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 font-semibold gap-1.5"
+                    className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 font-semibold gap-1.5 shrink-0"
                     onClick={() => handleDeletePlan(plan)}
                     title="Delete Plan"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 shrink-0" />
                     <span>Delete</span>
                   </Button>
                 </div>

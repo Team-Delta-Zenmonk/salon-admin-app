@@ -138,9 +138,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="text-foreground hover:text-destructive"
+              className="text-foreground hover:text-destructive gap-1.5"
             >
-              <LogOut className="h-3.5 w-3.5 mr-1" />
+              <LogOut className="h-3.5 w-3.5 shrink-0" />
               <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>

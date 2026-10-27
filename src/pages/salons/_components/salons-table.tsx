@@ -55,7 +55,7 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
             onClick={onRetry}
             className="gap-1.5"
           >
-            <RefreshCw className="h-3.5 w-3.5" />
+            <RefreshCw className="h-3.5 w-3.5 shrink-0" />
             Retry
           </Button>
         )}

@@ -108,11 +108,11 @@ export const LoginPage: React.FC = () => {
 
             <Button
               type="submit"
-              className="w-full h-11 text-sm font-semibold shadow-sm"
+              className="w-full h-11 text-sm font-semibold shadow-sm gap-2"
               isLoading={isLoading}
             >
-              <KeyRound className="h-4 w-4 mr-1.5" />
-              Authorize & Enter Console
+              <KeyRound className="h-4 w-4 shrink-0" />
+              <span>Authorize & Enter Console</span>
             </Button>
           </form>
 

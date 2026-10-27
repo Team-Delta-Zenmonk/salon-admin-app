@@ -192,20 +192,9 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="gap-1.5"
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-
-          <Button size="sm" onClick={() => setCreateModalOpen(true)} className="gap-1.5">
-            <PlusCircle className="h-3.5 w-3.5" />
-            Provision Salon
+          <Button size="sm" onClick={() => setCreateModalOpen(true)} className="gap-1.5 shrink-0">
+            <PlusCircle className="h-3.5 w-3.5 shrink-0" />
+            <span>Provision Salon</span>
           </Button>
         </div>
       </div>
