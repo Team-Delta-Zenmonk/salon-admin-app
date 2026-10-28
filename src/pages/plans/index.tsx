@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchSubscriptionPlans } from "@/features/plans/plans.action";
 import type { BackendPlan } from "@/features/salons/list-salons/list-salons.service";
@@ -19,7 +19,11 @@ export const PlansPage: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
+  const hasFetched = useRef(false);
+
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     dispatch(fetchSubscriptionPlans());
   }, [dispatch]);
 

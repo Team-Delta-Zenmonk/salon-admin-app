@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getCurrencyConfig } from "../../../../common/currencies.config";
 
 export const editPlanSchema = z.object({
   name: z
@@ -50,16 +51,18 @@ export const editPlanSchema = z.object({
     .or(z.literal("")),
 });
 
-export const getEditPlanSchema = (planCode?: string) =>
-  editPlanSchema.superRefine((data, ctx) => {
+export const getEditPlanSchema = (planCode?: string, currencyCode?: string) => {
+  const currencyConfig = getCurrencyConfig(currencyCode);
+  return editPlanSchema.superRefine((data, ctx) => {
     const isFreeTier = planCode?.toLowerCase().trim() === "trial";
-    if (!isFreeTier && data.amount <= 0) {
+    if (!isFreeTier && data.amount < currencyConfig.minChargeAmount) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["amount"],
-        message: "Zero price (₹0) is only allowed for the free trial tier (code: trial)",
+        message: `Plan price must be at least ${currencyConfig.symbol}${currencyConfig.minChargeAmount} for paid plans (minimum payment requirement)`,
       });
     }
   });
+};
 
 export type EditPlanForm = z.infer<typeof editPlanSchema>;

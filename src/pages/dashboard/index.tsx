@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import {
   Building2,
@@ -57,14 +57,19 @@ export const DashboardPage: React.FC = () => {
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
     dispatch(resetFilters());
-    dispatch(listSalonsAction({ page: 1, limit: 20 }));
   }, [dispatch]);
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     const timer = setTimeout(() => {
-      dispatch(setFilters({ search: searchInput.trim() || undefined, page: 1 }));
       dispatch(listSalonsAction({ search: searchInput.trim() || undefined, page: 1 }));
     }, 300);
     return () => clearTimeout(timer);
@@ -83,7 +88,6 @@ export const DashboardPage: React.FC = () => {
       statusFilter = "suspended";
     }
 
-    dispatch(setFilters({ status: statusFilter, is_active: activeFilter, page: 1 }));
     dispatch(listSalonsAction({ status: statusFilter, is_active: activeFilter, page: 1 }));
   };
 

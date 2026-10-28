@@ -23,12 +23,12 @@ const initialState: SalonsState = {
   data: [],
   total: 0,
   page: 1,
-  limit: 20,
+  limit: 10,
   totalPages: 1,
   hasMore: false,
   filters: {
     page: 1,
-    limit: 20,
+    limit: 10,
     status: undefined,
     is_active: undefined,
     search: undefined,
@@ -47,7 +47,7 @@ export const salonsSlice = createSlice({
       state.filters = { ...state.filters, ...action.payload };
     },
     resetFilters(state) {
-      state.filters = { page: 1, limit: 20, status: undefined, is_active: undefined, search: undefined };
+      state.filters = { page: 1, limit: 10, status: undefined, is_active: undefined, search: undefined };
       state.data = [];
       state.total = 0;
       state.page = 1;
