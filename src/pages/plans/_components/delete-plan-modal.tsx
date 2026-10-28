@@ -82,7 +82,8 @@ export const DeletePlanModal: React.FC<DeletePlanModalProps> = ({
           <div className="text-xs space-y-1">
             <p className="font-bold text-foreground">
               Are you sure you want to permanently delete plan {" "}
-              <EllipsisCell value={plan.name} maxChars={15}/>{" "}({plan.code || plan.id})?
+              <EllipsisCell value={plan.name} maxChars={15}/>{" "}
+              (<EllipsisCell value={plan.code || plan.id} maxChars={15} />){" "}?
             </p>
             <p className="text-muted-foreground">
               This is a <strong>hard delete</strong> operation. The plan record will be completely purged from the database table.
