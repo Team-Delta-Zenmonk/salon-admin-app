@@ -55,9 +55,11 @@ export const SalonCard: React.FC<SalonCardProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-          <span className="capitalize text-[10px] font-semibold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border">
-            {salon.subscription_plan}
-          </span>
+          <EllipsisCell
+            value={(salon.subscription_plan)}
+            maxChars={10}
+            className="capitalize text-[10px] font-semibold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border"
+          />
           <SalonStatusBadge salon={salon} />
         </div>
       </div>
@@ -97,8 +99,8 @@ export const SalonCard: React.FC<SalonCardProps> = ({
             <div>
               <p
                 className={`font-semibold font-mono text-[11px] ${countdown.isExpired
-                    ? "text-destructive"
-                    : "text-emerald-600 dark:text-emerald-400"
+                  ? "text-destructive"
+                  : "text-emerald-600 dark:text-emerald-400"
                   }`}
               >
                 {countdown.text}

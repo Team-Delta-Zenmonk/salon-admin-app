@@ -135,9 +135,10 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                   </td>
 
                   <td className="py-2.5 px-4">
-                    <span className="capitalize font-semibold text-foreground bg-muted px-2 py-0.5 rounded border border-border">
-                      {salon.subscription_plan}
-                    </span>
+                    <EllipsisCell
+                      value={salon.subscription_plan}
+                      maxChars={10}
+                      className="capitalize font-semibold text-foreground bg-muted px-2 py-0.5 rounded border border-border" />
                   </td>
 
                   <td className="py-2.5 px-4">
