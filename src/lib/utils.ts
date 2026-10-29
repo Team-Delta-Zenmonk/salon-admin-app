@@ -60,3 +60,7 @@ export function formatCurrency(amount: number, currency = "INR"): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+export function sanitizeSearchQuery(value: string): string {
+  return value.replace(/^\s+/, "").replace(/\s+/g, " ");
+}

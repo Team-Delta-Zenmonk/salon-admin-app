@@ -198,7 +198,7 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
         })
       ).unwrap();
 
-      dispatch(listSalonsAction());
+      dispatch(listSalonsAction({ page: 1, limit: 10, isAppend: false }));
       setIsSubmitting(false);
       handleClose(true);
       showSnackbar("Salon provisioned successfully");

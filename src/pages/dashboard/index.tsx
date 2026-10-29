@@ -1,54 +1,45 @@
 import React, { useEffect, useState, useRef } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
 import {
   Building2,
-  IndianRupee,
-  Clock,
-  AlertTriangle,
-  ShieldAlert,
   PlusCircle,
   CheckCircle2,
-  RefreshCw,
   Search,
   Filter,
-  Loader2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   listSalonsAction,
-  resetFilters,
-  setFilters,
   clearActionMessage,
+  DEFAULT_PAGE_LIMIT,
   type SalonItem,
 } from "@/features/salons";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { formatCurrency } from "@/lib/utils";
+import { sanitizeSearchQuery } from "@/lib/utils";
 import { SalonsTable } from "@/pages/salons/_components/salons-table";
 import { ExtendTrialModal } from "@/pages/salons/_components/extend-trial-modal";
 import { OverridePlanModal } from "@/pages/salons/_components/override-plan-modal";
 import { ToggleStatusModal } from "@/pages/salons/_components/toggle-status-modal";
 import { CreateSalonModal } from "@/pages/salons/_components/create-salon-modal";
-import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS } from "@/common/enums/subscription.enum";
-import { DashboardMetrics, type MetricStat } from "./_components/dashboard-metrics";
 
 export const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const {
     data: salons,
     total,
+    totalTenants,
     page,
+    limit,
+    totalPages,
     hasMore,
-    filters,
     isLoading,
-    isLoadingMore,
     error,
     actionMessage,
   } = useAppSelector((state) => state.salons);
 
-  const [searchInput, setSearchInput] = useState(filters?.search || "");
+  const [searchInput, setSearchInput] = useState("");
   const [activeTab, setActiveTab] = useState<string>("all");
 
   const [selectedSalon, setSelectedSalon] = useState<SalonItem | null>(null);
@@ -57,26 +48,9 @@ export const DashboardPage: React.FC = () => {
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  const isInitialMount = useRef(true);
+  const hasUserTypedRef = useRef(false);
 
-  useEffect(() => {
-    dispatch(resetFilters());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      dispatch(listSalonsAction({ search: searchInput.trim() || undefined, page: 1 }));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchInput, dispatch]);
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
+  const getFilterParams = (tab: string, search: string) => {
     let statusFilter: string | undefined = undefined;
     let activeFilter: boolean | undefined = undefined;
 
@@ -88,16 +62,50 @@ export const DashboardPage: React.FC = () => {
       statusFilter = "suspended";
     }
 
-    dispatch(listSalonsAction({ status: statusFilter, is_active: activeFilter, page: 1 }));
+    return {
+      status: statusFilter,
+      is_active: activeFilter,
+      search: search.trim() || undefined,
+    };
+  };
+
+  useEffect(() => {
+    dispatch(listSalonsAction({ page: 1, limit: DEFAULT_PAGE_LIMIT, isAppend: false }));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!hasUserTypedRef.current) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const activeFilters = getFilterParams(activeTab, searchInput);
+      dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput, activeTab, dispatch]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const activeFilters = getFilterParams(tab, searchInput);
+    dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
   };
 
   const handleRefresh = () => {
-    dispatch(listSalonsAction({ page: 1 }));
+    const activeFilters = getFilterParams(activeTab, searchInput);
+    dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === page || isLoading) return;
+    const activeFilters = getFilterParams(activeTab, searchInput);
+    dispatch(listSalonsAction({ ...activeFilters, page: newPage, isAppend: false }));
   };
 
   const handleLoadMore = () => {
-    if (isLoadingMore || !hasMore) return;
-    dispatch(listSalonsAction({ page: page + 1 }));
+    if (isLoading || !hasMore) return;
+    const activeFilters = getFilterParams(activeTab, searchInput);
+    dispatch(listSalonsAction({ ...activeFilters, page: page + 1, isAppend: true }));
   };
 
   const statusOptions = [
@@ -108,66 +116,7 @@ export const DashboardPage: React.FC = () => {
     { value: "suspended", label: "Suspended" },
   ];
 
-  const totalSalons = total || salons.length;
-  const activePaid = salons.filter(
-    (s) => s.subscription_status === SUBSCRIPTION_STATUS.ACTIVE && s.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL,
-  ).length;
-  const activeTrials = salons.filter((s) => s.subscription_status === SUBSCRIPTION_STATUS.TRIAL).length;
-  const expiredSalons = salons.filter((s) => s.subscription_status === SUBSCRIPTION_STATUS.EXPIRED).length;
-  const suspendedSalons = salons.filter(
-    (s) => !s.is_active || s.subscription_status === SUBSCRIPTION_STATUS.SUSPENDED,
-  ).length;
-
-  const estimatedMRR = salons.reduce((acc, s) => {
-    if (s.subscription_status === SUBSCRIPTION_STATUS.ACTIVE) {
-      if (s.subscription_plan === SUBSCRIPTION_PLAN.MONTHLY) return acc + 2499;
-      if (s.subscription_plan === SUBSCRIPTION_PLAN.YEARLY) return acc + Math.round(24990 / 12);
-    }
-    return acc;
-  }, 0);
-
-  const stats: MetricStat[] = [
-    {
-      title: "Total Tenants",
-      value: totalSalons,
-      subtext: "All onboarded salons",
-      icon: Building2,
-      color: "text-primary",
-      bg: "bg-card border-border",
-    },
-    {
-      title: "Projected MRR",
-      value: formatCurrency(estimatedMRR),
-      subtext: `${activePaid} active subscriptions`,
-      icon: IndianRupee,
-      color: "text-emerald-600 dark:text-emerald-400",
-      bg: "bg-card border-border",
-    },
-    {
-      title: "Active Trials",
-      value: activeTrials,
-      subtext: "7-15 day onboarding period",
-      icon: Clock,
-      color: "text-amber-600 dark:text-amber-400",
-      bg: "bg-card border-border",
-    },
-    {
-      title: "Expired / At Risk",
-      value: expiredSalons,
-      subtext: "Needs upgrade or follow-up",
-      icon: AlertTriangle,
-      color: "text-rose-600 dark:text-rose-400",
-      bg: "bg-card border-border",
-    },
-    {
-      title: "Suspended / Locked",
-      value: suspendedSalons,
-      subtext: "Disabled tenant access",
-      icon: ShieldAlert,
-      color: "text-muted-foreground",
-      bg: "bg-card border-border",
-    },
-  ];
+  const totalSalons = totalTenants || total || salons.length;
 
   return (
     <div className="space-y-8">
@@ -203,15 +152,27 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      <DashboardMetrics stats={stats} />
+      <div className="w-full sm:max-w-xs">
+        <Card className="border border-border bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-4">
+            <CardDescription className="text-xs font-semibold text-muted-foreground">
+              Total Tenants
+            </CardDescription>
+            <Building2 className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="text-2xl font-black text-foreground">{totalSalons}</div>
+            <p className="mt-1 text-[11px] text-muted-foreground font-medium">
+              All onboarded salons
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="border-border">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border p-5">
           <div>
             <CardTitle className="text-base sm:text-lg">Salon Owners & Tenants Directory</CardTitle>
-            <CardDescription>
-              Showing {salons.length} of {total} registered salon tenants. Scroll down to automatically load more.
-            </CardDescription>
           </div>
         </CardHeader>
 
@@ -221,7 +182,20 @@ export const DashboardPage: React.FC = () => {
               <Input
                 value={searchInput}
                 placeholder="Search by name, email, or subdomain..."
-                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    const target = e.currentTarget;
+                    const cursor = target.selectionStart ?? 0;
+                    if (cursor === 0 || target.value[cursor - 1] === " ") {
+                      e.preventDefault();
+                    }
+                  }
+                }}
+                onChange={(e) => {
+                  const sanitized = sanitizeSearchQuery(e.target.value);
+                  hasUserTypedRef.current = true;
+                  setSearchInput(sanitized);
+                }}
                 leftIcon={<Search className="h-4 w-4" />}
               />
             </div>
@@ -238,48 +212,31 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <CardContent className="p-0">
-          <InfiniteScroll
-            dataLength={salons.length}
-            next={handleLoadMore}
+          <SalonsTable
+            salons={salons}
+            isLoading={isLoading}
+            page={page}
+            total={total}
             hasMore={hasMore}
-            scrollableTarget="admin-main-content"
-            scrollThreshold={0.8}
-            loader={
-              <div className="flex items-center justify-center py-6 text-xs text-muted-foreground gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span>Loading more salon tenants...</span>
-              </div>
-            }
-            endMessage={
-              salons.length > 0 ? (
-                <div className="py-6 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-                  <div className="w-12 h-px bg-border/50"></div>
-                  <span>Showing all {salons.length} salon tenants</span>
-                  <div className="w-12 h-px bg-border/50"></div>
-                </div>
-              ) : null
-            }
-          >
-            <SalonsTable
-              salons={salons}
-              isLoading={isLoading}
-              error={error}
-              emptyMessage='No salons found. Click "Provision Salon" to onboard the first tenant.'
-              onRetry={handleRefresh}
-              onExtendTrial={(salon) => {
-                setSelectedSalon(salon);
-                setTrialModalOpen(true);
-              }}
-              onOverridePlan={(salon) => {
-                setSelectedSalon(salon);
-                setPlanModalOpen(true);
-              }}
-              onToggleStatus={(salon) => {
-                setSelectedSalon(salon);
-                setStatusModalOpen(true);
-              }}
-            />
-          </InfiniteScroll>
+            limit={limit}
+            onPageChange={handlePageChange}
+            onLoadMore={handleLoadMore}
+            error={error}
+            emptyMessage='No salons found. Click "Provision Salon" to onboard the first tenant.'
+            onRetry={handleRefresh}
+            onExtendTrial={(salon) => {
+              setSelectedSalon(salon);
+              setTrialModalOpen(true);
+            }}
+            onOverridePlan={(salon) => {
+              setSelectedSalon(salon);
+              setPlanModalOpen(true);
+            }}
+            onToggleStatus={(salon) => {
+              setSelectedSalon(salon);
+              setStatusModalOpen(true);
+            }}
+          />
         </CardContent>
       </Card>
 

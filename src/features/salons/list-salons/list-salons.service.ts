@@ -19,12 +19,18 @@ export interface SalonItem {
   updated_at: string;
 }
 
+export const DEFAULT_PAGE_LIMIT = 10;
+
 export interface ListSalonsParams {
   page?: number;
   limit?: number;
   status?: string;
   is_active?: boolean | string;
   search?: string;
+}
+
+export interface ListSalonsThunkParams extends ListSalonsParams {
+  isAppend?: boolean;
 }
 
 export interface ListSalonsResponse {

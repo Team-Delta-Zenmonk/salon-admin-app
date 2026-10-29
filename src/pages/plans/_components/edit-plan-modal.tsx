@@ -54,16 +54,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
     if (isBusy && !force) return;
     dispatch(clearPlansError());
     dispatch(clearPlansSuccessMessage());
-    if (plan) {
-      reset({
-        amount: plan.amount,
-        name: plan.name,
-        description: plan.description || "",
-        billing_cycle: plan.billing_cycle || "",
-        duration_days: plan.duration_days || 30,
-      });
-      clearErrors();
-    }
+    clearErrors();
     onClose();
   };
 
