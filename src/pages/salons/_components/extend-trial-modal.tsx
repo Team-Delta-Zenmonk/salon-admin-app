@@ -150,7 +150,7 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
           label="Custom Additional Days"
           {...register("days")}
           leftIcon={<Calendar className="h-4 w-4" />}
-          helperText="Additive: days will be added on top of existing remaining time."
+          helperText="Additional days will be added to the current trial expiration date."
           error={errors.days?.message}
         />
 

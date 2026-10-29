@@ -172,9 +172,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
         <div className="rounded-xl border border-border bg-background p-4 flex items-center justify-between text-xs">
           <div>
             <span className="text-muted-foreground block">Current Plan:</span>
-            <span className="font-bold text-foreground uppercase text-sm">
-              {salon.subscription_plan}
-            </span>
+            <EllipsisCell value={salon.subscription_plan} className="font-bold text-foreground uppercase text-sm" maxChars={20} />
           </div>
           <div>
             <span className="text-muted-foreground block text-right">Current Status:</span>

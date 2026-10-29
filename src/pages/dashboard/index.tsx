@@ -152,27 +152,11 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="w-full sm:max-w-xs">
-        <Card className="border border-border bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 p-4">
-            <CardDescription className="text-xs font-semibold text-muted-foreground">
-              Total Tenants
-            </CardDescription>
-            <Building2 className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-black text-foreground">{totalSalons}</div>
-            <p className="mt-1 text-[11px] text-muted-foreground font-medium">
-              All onboarded salons
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card className="border-border">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border p-5">
-          <div>
+          <div className="flex flex-col md:flex-row gap-5 justify-between w-full">
             <CardTitle className="text-base sm:text-lg">Salon Owners & Tenants Directory</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Total Tenant: {total}</CardTitle>
           </div>
         </CardHeader>
 

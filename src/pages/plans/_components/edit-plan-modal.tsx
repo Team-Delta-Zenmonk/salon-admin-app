@@ -94,7 +94,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
       isOpen={isOpen}
       onClose={() => handleClose()}
       preventClose={isBusy}
-      title={`Change Pricing: ${plan.name}`}
+      title={`Change Pricing:`}
       description="Update pricing and details for new tenant subscriptions."
       maxWidth="md"
     >
