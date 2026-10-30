@@ -39,7 +39,7 @@ export interface ListSalonsResponse {
     total: number;
     page: number;
     limit: number;
-    totalPages: number;
+    totalPages?: number;
   };
 }
 

@@ -72,8 +72,9 @@ export const salonsSlice = createSlice({
         state.total = payload.pagination.total;
         state.page = payload.pagination.page;
         state.limit = payload.pagination.limit;
-        state.totalPages = payload.pagination.totalPages;
-        state.hasMore = payload.pagination.page < payload.pagination.totalPages;
+        const totalPages = payload.pagination.totalPages ?? Math.max(1, Math.ceil(payload.pagination.total / payload.pagination.limit));
+        state.totalPages = totalPages;
+        state.hasMore = payload.pagination.page < totalPages;
 
         const arg = action.meta.arg;
         const isUnfiltered =
