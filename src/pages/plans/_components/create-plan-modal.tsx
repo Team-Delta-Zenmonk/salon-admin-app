@@ -43,6 +43,7 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
       amount: 2499,
       duration_days: 30,
       billing_cycle: "",
+      badge: "",
       description: "",
     },
   });
@@ -83,6 +84,7 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
           amount: Number(data.amount),
           duration_days: Number(data.duration_days),
           billing_cycle: data.billing_cycle || undefined,
+          badge: data.badge || undefined,
           description: data.description || undefined,
         })
       );
@@ -202,6 +204,16 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
           <Input
             {...register("billing_cycle")}
             placeholder="e.g. / quarter, / 6 months"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-foreground mb-1">
+            Badge Label (Optional)
+          </label>
+          <Input
+            {...register("badge")}
+            placeholder="e.g. Best Value, Popular, Special Offer"
           />
         </div>
 

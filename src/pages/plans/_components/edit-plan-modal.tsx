@@ -64,7 +64,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
       setIsSubmitting(true);
       const res = await dispatch(
         updateSubscriptionPlan({
-          code: plan.id,
+          uuid: plan.uuid,
           payload: {
             amount: Number(data.amount),
             name: data.name,

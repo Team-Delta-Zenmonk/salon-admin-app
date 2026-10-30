@@ -36,8 +36,7 @@ export const DeletePlanModal: React.FC<DeletePlanModalProps> = ({
     if (!plan || isBusy) return;
     try {
       setIsSubmitting(true);
-      const planCode = plan.code || (plan.id as string);
-      const res = await dispatch(deleteSubscriptionPlan(planCode));
+      const res = await dispatch(deleteSubscriptionPlan(plan.uuid));
 
       if (deleteSubscriptionPlan.fulfilled.match(res)) {
         setIsSubmitting(false);
@@ -83,7 +82,7 @@ export const DeletePlanModal: React.FC<DeletePlanModalProps> = ({
             <p className="font-bold text-foreground">
               Are you sure you want to permanently delete plan {" "}
               <EllipsisCell value={plan.name} maxChars={15}/>{" "}
-              (<EllipsisCell value={plan.code || plan.id} maxChars={15} />){" "}?
+              (<EllipsisCell value={plan.code || String(plan.id)} maxChars={15} />){" "}?
             </p>
             <p className="text-muted-foreground">
               This is a <strong>hard delete</strong> operation. The plan record will be completely purged from the database table.

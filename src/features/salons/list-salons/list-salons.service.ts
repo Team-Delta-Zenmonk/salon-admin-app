@@ -25,6 +25,7 @@ export interface ListSalonsParams {
   page?: number;
   limit?: number;
   status?: string;
+  plan?: string;
   is_active?: boolean | string;
   search?: string;
 }
@@ -44,7 +45,8 @@ export interface ListSalonsResponse {
 }
 
 export interface BackendPlan {
-  id: SubscriptionPlan;
+  id: string | number;
+  uuid: string;
   code?: string;
   db_id?: number;
   name: string;
@@ -54,6 +56,8 @@ export interface BackendPlan {
   billing_cycle: string;
   description: string;
   duration_days: number;
+  is_active: boolean;
+  badge?: string;
 }
 
 export const listSalonsService = async (params: ListSalonsParams = {}): Promise<ListSalonsResponse> => {
@@ -82,14 +86,15 @@ export interface CreatePlanPayload {
   billing_cycle?: string;
   description?: string;
   code?: string;
+  badge?: string;
 }
 
 export const updateSubscriptionPlanService = async (
-  code: string,
+  uuid: string,
   payload: UpdatePlanPayload
 ): Promise<BackendPlan> => {
   const res = await axiosInstance.patch<{ message: string; plan: BackendPlan }>(
-    `/admin/plans/${code}`,
+    `/admin/plans/${uuid}`,
     payload
   );
   return res.data.plan;
@@ -103,4 +108,20 @@ export const createSubscriptionPlanService = async (
     payload
   );
   return res.data.plan;
+};
+
+export const toggleSubscriptionPlanStatusService = async (
+  uuid: string
+): Promise<{ message: string; plan: Partial<BackendPlan> }> => {
+  const res = await axiosInstance.patch<{ message: string; plan: Partial<BackendPlan> }>(
+    `/admin/plans/${uuid}/status`
+  );
+  return res.data;
+};
+
+export const deleteSubscriptionPlanService = async (uuid: string): Promise<string> => {
+  const res = await axiosInstance.delete<{ message: string; uuid?: string }>(
+    `/admin/plans/${uuid}`
+  );
+  return res.data.uuid || uuid;
 };

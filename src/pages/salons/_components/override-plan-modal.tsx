@@ -62,7 +62,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
     if (isOpen && salon) {
       const currentPlan = salon.subscription_plan && salon.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL
         ? salon.subscription_plan
-        : (backendPlans[0]?.id || "");
+        : (backendPlans[0]?.uuid || (backendPlans[0]?.code ? String(backendPlans[0].code) : String(backendPlans[0]?.id || "")));
       reset({
         selectedPlan: currentPlan,
         durationDays: 30,
@@ -72,15 +72,21 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
     }
   }, [isOpen, reset, salon, dispatch]);
 
-  const backendPlans = allBackendPlans.filter((p) => p.id !== SUBSCRIPTION_PLAN.TRIAL);
+  const backendPlans = allBackendPlans.filter(
+    (p) => p.id !== SUBSCRIPTION_PLAN.TRIAL && p.code !== SUBSCRIPTION_PLAN.TRIAL
+  );
 
   const isPlansReady = backendPlans.length > 0 && !isLoadingPlans;
   const showSkeleton = !isPlansReady;
 
   useEffect(() => {
     if (isOpen && salon && isPlansReady && !watchSelectedPlan) {
-      const matchPlan = backendPlans.find((p) => p.id === salon.subscription_plan);
-      const chosenPlan = matchPlan ? matchPlan.id : backendPlans[0]?.id || "";
+      const matchPlan = backendPlans.find(
+        (p) => p.uuid === salon.subscription_plan || p.id === salon.subscription_plan || p.code === salon.subscription_plan
+      );
+      const chosenPlan = matchPlan
+        ? (matchPlan.uuid || matchPlan.code || String(matchPlan.id))
+        : (backendPlans[0]?.uuid || backendPlans[0]?.code || String(backendPlans[0]?.id || ""));
       if (chosenPlan) {
         setValue("selectedPlan", chosenPlan, { shouldValidate: true });
       }
@@ -90,7 +96,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
   if (!salon) return null;
 
   const planTiers = backendPlans.map((p) => ({
-    id: p.id,
+    id: p.uuid || p.code || String(p.id),
     name: p.name,
     price: `${p.formatted_price} ${p.billing_cycle}`,
     features: p.description,

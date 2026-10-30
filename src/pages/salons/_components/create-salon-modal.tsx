@@ -92,11 +92,11 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
   };
 
   const planOptions = backendPlans.map((p) => ({
-    id: p.id,
+    id: p.code || String(p.id),
     name: p.name,
     price: p.formatted_price === "Free" ? "Free" : `${p.formatted_price} ${p.billing_cycle}`,
     description: p.description,
-    icon: iconMap[p.id] || <Zap className="h-4 w-4 text-primary" />,
+    icon: iconMap[p.code || String(p.id)] || <Zap className="h-4 w-4 text-primary" />,
   }));
 
   const isPaidPlan = watchPlan !== SUBSCRIPTION_PLAN.TRIAL;
@@ -184,6 +184,11 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
         }
         : null;
 
+      const matchedPlan = backendPlans.find(
+        (p) => p.code === data.plan || p.id === data.plan || p.uuid === data.plan
+      );
+      const planUuidOrCode = matchedPlan?.uuid || data.plan;
+
       await dispatch(
         createSalonAction({
           name: data.name.trim(),
@@ -192,7 +197,8 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
           password: data.password,
           slug: data.slug?.trim() || undefined,
           trial_days: Number(data.trial_days),
-          subscription_plan: data.plan,
+          plan: planUuidOrCode,
+          subscription_plan: planUuidOrCode,
           amount: baseAmount,
           discount_details: discountDetails,
         })

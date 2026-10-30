@@ -5,6 +5,7 @@ import {
   updateSubscriptionPlanService,
   createSubscriptionPlanService,
   deleteSubscriptionPlanService,
+  toggleSubscriptionPlanStatusService,
   type UpdatePlanPayload,
   type CreatePlanPayload,
 } from "./plans.service";
@@ -29,7 +30,7 @@ export const fetchSubscriptionPlans = createAsyncThunk<
 });
 
 export interface UpdatePlanArgs {
-  code: string;
+  uuid: string;
   payload: UpdatePlanPayload;
 }
 
@@ -37,9 +38,9 @@ export const updateSubscriptionPlan = createAsyncThunk<
   BackendPlan,
   UpdatePlanArgs,
   { rejectValue: string }
->("plans/updateSubscriptionPlan", async ({ code, payload }, thunkAPI) => {
+>("plans/updateSubscriptionPlan", async ({ uuid, payload }, thunkAPI) => {
   try {
-    const updatedPlan = await updateSubscriptionPlanService(code, payload);
+    const updatedPlan = await updateSubscriptionPlanService(uuid, payload);
     return updatedPlan;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
@@ -69,14 +70,36 @@ export const createSubscriptionPlan = createAsyncThunk<
   }
 });
 
+export const toggleSubscriptionPlanStatus = createAsyncThunk<
+  { uuid: string; is_active: boolean; message: string },
+  string,
+  { rejectValue: string }
+>("plans/toggleSubscriptionPlanStatus", async (uuid, thunkAPI) => {
+  try {
+    const res = await toggleSubscriptionPlanStatusService(uuid);
+    return {
+      uuid: (res.plan.uuid as string) || uuid,
+      is_active: Boolean(res.plan.is_active),
+      message: res.message || "Plan status updated successfully",
+    };
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || "Failed to toggle plan status"
+      );
+    }
+    return thunkAPI.rejectWithValue("Failed to toggle plan status");
+  }
+});
+
 export const deleteSubscriptionPlan = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->("plans/deleteSubscriptionPlan", async (code, thunkAPI) => {
+>("plans/deleteSubscriptionPlan", async (uuid, thunkAPI) => {
   try {
-    const deletedCode = await deleteSubscriptionPlanService(code);
-    return deletedCode;
+    const deletedUuid = await deleteSubscriptionPlanService(uuid);
+    return deletedUuid;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       return thunkAPI.rejectWithValue(

@@ -55,6 +55,12 @@ export const getCreatePlanSchema = (currencyCode?: string) => {
         .max(50, "Billing cycle tag cannot exceed 50 characters")
         .optional()
         .or(z.literal("")),
+      badge: z
+        .string()
+        .trim()
+        .max(50, "Badge cannot exceed 50 characters")
+        .optional()
+        .or(z.literal("")),
       description: z
         .string()
         .trim()

@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
-  Building2,
   PlusCircle,
   CheckCircle2,
   Search,
-  Filter,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -13,16 +11,16 @@ import {
   DEFAULT_PAGE_LIMIT,
   type SalonItem,
 } from "@/features/salons";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { sanitizeSearchQuery } from "@/lib/utils";
 import { SalonsTable } from "@/pages/salons/_components/salons-table";
 import { ExtendTrialModal } from "@/pages/salons/_components/extend-trial-modal";
 import { OverridePlanModal } from "@/pages/salons/_components/override-plan-modal";
 import { ToggleStatusModal } from "@/pages/salons/_components/toggle-status-modal";
 import { CreateSalonModal } from "@/pages/salons/_components/create-salon-modal";
+import { SalonFilters } from "./_components/salon-filters";
 
 export const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -40,7 +38,8 @@ export const DashboardPage: React.FC = () => {
   } = useAppSelector((state) => state.salons);
 
   const [searchInput, setSearchInput] = useState("");
-  const [activeTab, setActiveTab] = useState<string>("all");
+  const [selectedPlan, setSelectedPlan] = useState<string>("all");
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
 
   const [selectedSalon, setSelectedSalon] = useState<SalonItem | null>(null);
   const [trialModalOpen, setTrialModalOpen] = useState(false);
@@ -50,21 +49,10 @@ export const DashboardPage: React.FC = () => {
 
   const hasUserTypedRef = useRef(false);
 
-  const getFilterParams = (tab: string, search: string) => {
-    let statusFilter: string | undefined = undefined;
-    let activeFilter: boolean | undefined = undefined;
-
-    if (tab === "trial") statusFilter = "trial";
-    else if (tab === "active") statusFilter = "active";
-    else if (tab === "expired") statusFilter = "expired";
-    else if (tab === "suspended") {
-      activeFilter = false;
-      statusFilter = "suspended";
-    }
-
+  const getFilterParams = (plan: string, statuses: string[], search: string) => {
     return {
-      status: statusFilter,
-      is_active: activeFilter,
+      plan: plan !== "all" ? plan : undefined,
+      status: statuses.length > 0 ? statuses.join(",") : undefined,
       search: search.trim() || undefined,
     };
   };
@@ -79,44 +67,42 @@ export const DashboardPage: React.FC = () => {
     }
 
     const timer = setTimeout(() => {
-      const activeFilters = getFilterParams(activeTab, searchInput);
+      const activeFilters = getFilterParams(selectedPlan, selectedStatuses, searchInput);
       dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchInput, activeTab, dispatch]);
+  }, [searchInput, selectedPlan, selectedStatuses, dispatch]);
 
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    const activeFilters = getFilterParams(tab, searchInput);
+  const handleApplyFilters = (newPlan: string, newStatuses: string[]) => {
+    setSelectedPlan(newPlan);
+    setSelectedStatuses(newStatuses);
+    const activeFilters = getFilterParams(newPlan, newStatuses, searchInput);
+    dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
+  };
+
+  const handleResetFilters = () => {
+    setSelectedPlan("all");
+    setSelectedStatuses([]);
+    const activeFilters = getFilterParams("all", [], searchInput);
     dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
   };
 
   const handleRefresh = () => {
-    const activeFilters = getFilterParams(activeTab, searchInput);
+    const activeFilters = getFilterParams(selectedPlan, selectedStatuses, searchInput);
     dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
   };
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages || newPage === page || isLoading) return;
-    const activeFilters = getFilterParams(activeTab, searchInput);
+    const activeFilters = getFilterParams(selectedPlan, selectedStatuses, searchInput);
     dispatch(listSalonsAction({ ...activeFilters, page: newPage, isAppend: false }));
   };
 
   const handleLoadMore = () => {
     if (isLoading || !hasMore) return;
-    const activeFilters = getFilterParams(activeTab, searchInput);
+    const activeFilters = getFilterParams(selectedPlan, selectedStatuses, searchInput);
     dispatch(listSalonsAction({ ...activeFilters, page: page + 1, isAppend: true }));
   };
-
-  const statusOptions = [
-    { value: "all", label: "All Tenants" },
-    { value: "trial", label: "Active Trials" },
-    { value: "active", label: "Subscribed" },
-    { value: "expired", label: "Expired" },
-    { value: "suspended", label: "Suspended" },
-  ];
-
-  const totalSalons = totalTenants || total || salons.length;
 
   return (
     <div className="space-y-8">
@@ -156,12 +142,12 @@ export const DashboardPage: React.FC = () => {
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border p-5">
           <div className="flex flex-col md:flex-row gap-5 justify-between w-full">
             <CardTitle className="text-base sm:text-lg">Salon Owners & Tenants Directory</CardTitle>
-            <CardTitle className="text-base sm:text-lg">Total Tenant: {total}</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Total Tenant: {totalTenants || total}</CardTitle>
           </div>
         </CardHeader>
 
         <div className="p-4 sm:px-6 border-b border-border bg-muted/10">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
             <div className="w-full sm:flex-1 sm:max-w-md">
               <Input
                 value={searchInput}
@@ -184,12 +170,21 @@ export const DashboardPage: React.FC = () => {
               />
             </div>
 
-            <div className="w-full sm:w-56 shrink-0">
-              <Select
-                value={activeTab}
-                onChange={(val) => handleTabChange(val)}
-                options={statusOptions}
-                leftIcon={<Filter className="h-4 w-4" />}
+            <div className="shrink-0 flex items-center justify-end gap-2.5">
+              {(selectedPlan !== "all" || selectedStatuses.length > 0) && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer font-medium"
+                >
+                  Clear all
+                </button>
+              )}
+              <SalonFilters
+                selectedPlan={selectedPlan}
+                selectedStatuses={selectedStatuses}
+                onApply={handleApplyFilters}
+                onReset={handleResetFilters}
               />
             </div>
           </div>

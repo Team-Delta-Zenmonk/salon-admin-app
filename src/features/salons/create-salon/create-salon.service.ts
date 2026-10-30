@@ -14,6 +14,7 @@ export interface CreateSalonPayload {
   password: string;
   slug?: string;
   trial_days?: number;
+  plan?: string;
   subscription_plan?: SubscriptionPlan | string;
   amount?: number;
   discount_details?: DiscountDetails | null;

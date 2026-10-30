@@ -17,19 +17,23 @@ export interface CreatePlanPayload {
   billing_cycle?: string;
   description?: string;
   code?: string;
+  badge?: string;
 }
 
 export const getSubscriptionPlansService = async (): Promise<BackendPlan[]> => {
-  const res = await axiosInstance.get<{ plans: BackendPlan[] }>("/admin/plans");
-  return res.data.plans;
+  const res = await axiosInstance.get<{ plans: BackendPlan[] } | BackendPlan[]>("/admin/plans");
+  if (Array.isArray(res.data)) {
+    return res.data;
+  }
+  return res.data?.plans || [];
 };
 
 export const updateSubscriptionPlanService = async (
-  code: string,
+  uuid: string,
   payload: UpdatePlanPayload
 ): Promise<BackendPlan> => {
   const res = await axiosInstance.patch<{ message: string; plan: BackendPlan }>(
-    `/admin/plans/${code}`,
+    `/admin/plans/${uuid}`,
     payload
   );
   return res.data.plan;
@@ -45,9 +49,18 @@ export const createSubscriptionPlanService = async (
   return res.data.plan;
 };
 
-export const deleteSubscriptionPlanService = async (code: string): Promise<string> => {
-  const res = await axiosInstance.delete<{ message: string; code?: string }>(
-    `/admin/plans/${code}`
+export const toggleSubscriptionPlanStatusService = async (
+  uuid: string
+): Promise<{ message: string; plan: Partial<BackendPlan> }> => {
+  const res = await axiosInstance.patch<{ message: string; plan: Partial<BackendPlan> }>(
+    `/admin/plans/${uuid}/status`
   );
-  return res.data.code || code;
+  return res.data;
+};
+
+export const deleteSubscriptionPlanService = async (uuid: string): Promise<string> => {
+  const res = await axiosInstance.delete<{ message: string; uuid?: string }>(
+    `/admin/plans/${uuid}`
+  );
+  return res.data.uuid || uuid;
 };

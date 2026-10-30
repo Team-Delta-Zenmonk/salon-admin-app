@@ -5,11 +5,13 @@ import {
   updateSubscriptionPlan,
   createSubscriptionPlan,
   deleteSubscriptionPlan,
+  toggleSubscriptionPlanStatus,
 } from "./plans.action";
 
 export interface PlansState {
   plans: BackendPlan[];
   isLoading: boolean;
+  togglingPlanUuid: string | null;
   error: string | null;
   successMessage: string | null;
 }
@@ -17,6 +19,7 @@ export interface PlansState {
 const initialState: PlansState = {
   plans: [],
   isLoading: false,
+  togglingPlanUuid: null,
   error: null,
   successMessage: null,
 };
@@ -26,6 +29,7 @@ export {
   updateSubscriptionPlan,
   createSubscriptionPlan,
   deleteSubscriptionPlan,
+  toggleSubscriptionPlanStatus,
 };
 
 export const plansSlice = createSlice({
@@ -61,7 +65,9 @@ export const plansSlice = createSlice({
       .addCase(updateSubscriptionPlan.fulfilled, (state, action: PayloadAction<BackendPlan>) => {
         state.isLoading = false;
         state.successMessage = `Plan pricing for '${action.payload.name}' updated successfully!`;
-        const index = state.plans.findIndex((p) => p.id === action.payload.id);
+        const index = state.plans.findIndex(
+          (p) => p.uuid === action.payload.uuid || (action.payload.id && p.id === action.payload.id)
+        );
         if (index !== -1) {
           state.plans[index] = action.payload;
         } else {
@@ -86,6 +92,22 @@ export const plansSlice = createSlice({
         state.isLoading = false;
         state.error = (action.payload as string) || "Failed to create plan";
       })
+      .addCase(toggleSubscriptionPlanStatus.pending, (state, action) => {
+        state.togglingPlanUuid = action.meta.arg;
+        state.error = null;
+      })
+      .addCase(toggleSubscriptionPlanStatus.fulfilled, (state, action) => {
+        state.togglingPlanUuid = null;
+        const index = state.plans.findIndex((p) => p.uuid === action.payload.uuid);
+        if (index !== -1) {
+          state.plans[index].is_active = action.payload.is_active;
+        }
+        state.successMessage = action.payload.message;
+      })
+      .addCase(toggleSubscriptionPlanStatus.rejected, (state, action) => {
+        state.togglingPlanUuid = null;
+        state.error = (action.payload as string) || "Failed to toggle plan status";
+      })
       .addCase(deleteSubscriptionPlan.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -93,8 +115,10 @@ export const plansSlice = createSlice({
       })
       .addCase(deleteSubscriptionPlan.fulfilled, (state, action: PayloadAction<string>) => {
         state.isLoading = false;
-        state.successMessage = `Plan '${action.payload}' deleted successfully!`;
-        state.plans = state.plans.filter((p) => p.id !== action.payload && p.code !== action.payload);
+        state.successMessage = "Plan deleted successfully!";
+        state.plans = state.plans.filter(
+          (p) => p.uuid !== action.payload && p.code !== action.payload && p.id !== action.payload
+        );
       })
       .addCase(deleteSubscriptionPlan.rejected, (state, action) => {
         state.isLoading = false;

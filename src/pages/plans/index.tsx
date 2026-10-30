@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchSubscriptionPlans } from "@/features/plans/plans.action";
+import { fetchSubscriptionPlans, toggleSubscriptionPlanStatus } from "@/features/plans/plans.action";
 import type { BackendPlan } from "@/features/salons/list-salons/list-salons.service";
 import { EditPlanModal } from "./_components/edit-plan-modal";
 import { CreatePlanModal } from "./_components/create-plan-modal";
@@ -8,12 +8,23 @@ import { DeletePlanModal } from "./_components/delete-plan-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Edit, RefreshCw, CheckCircle2, IndianRupee, Plus, Trash2 } from "lucide-react";
+import {
+  CreditCard,
+  Edit,
+  RefreshCw,
+  CheckCircle2,
+  XCircle,
+  IndianRupee,
+  Plus,
+  Trash2,
+  Sparkles,
+} from "lucide-react";
 import { EllipsisCell } from "@/components/ui/ellipsis-cell";
+import { showSnackbar } from "@/components/ui/snackbar";
 
 export const PlansPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { plans, isLoading, error } = useAppSelector((state) => state.plans);
+  const { plans, isLoading, togglingPlanUuid, error } = useAppSelector((state) => state.plans);
   const [selectedPlan, setSelectedPlan] = useState<BackendPlan | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -35,6 +46,16 @@ export const PlansPage: React.FC = () => {
   const handleDeletePlan = (plan: BackendPlan) => {
     setSelectedPlan(plan);
     setDeleteModalOpen(true);
+  };
+
+  const handleToggleStatus = async (plan: BackendPlan) => {
+    try {
+      const res = await dispatch(toggleSubscriptionPlanStatus(plan.uuid)).unwrap();
+      showSnackbar(res.message || `Plan is now ${res.is_active ? "active" : "inactive"}`);
+    } catch (err: unknown) {
+      const errorMsg = typeof err === "string" ? err : "Failed to toggle plan status";
+      showSnackbar(errorMsg, "error");
+    }
   };
 
   return (
@@ -75,78 +96,121 @@ export const PlansPage: React.FC = () => {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-3">
-          {plans.map((plan) => (
-            <Card key={plan.id} className="relative flex flex-col justify-between overflow-hidden border-border transition-all hover:border-primary/40 hover:shadow-md">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-bold text-foreground">
-                  <EllipsisCell as="span" value={plan.name} />
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground break-words leading-relaxed">
-                  <EllipsisCell as="span" value={plan.description} />
-                </CardDescription>
-              </CardHeader>
+          {plans.map((plan) => {
+            const isToggling = togglingPlanUuid === plan.uuid;
+            const isActive = plan.is_active !== false;
 
-              <CardContent className="space-y-6">
-                <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
-                  <span className="text-3xl font-extrabold tracking-tight text-foreground shrink-0">
-                    {plan.formatted_price}
-                  </span>
-                  {plan.billing_cycle && (
-                    <span className="text-sm text-muted-foreground font-medium break-words">
-                      {plan.billing_cycle}
-                    </span>
-                  )}
-                </div>
+            return (
+              <Card
+                key={plan.uuid || plan.id}
+                className={`relative flex flex-col justify-between overflow-hidden border-border transition-all hover:border-primary/40 hover:shadow-md ${
+                  !isActive ? "opacity-75 bg-muted/20" : ""
+                }`}
+              >
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-xl font-bold text-foreground">
+                      <EllipsisCell as="span" value={plan.name} />
+                    </CardTitle>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {plan.badge && (
+                        <Badge variant="info" size="sm" className="font-semibold text-[10px]">
+                          <Sparkles className="h-3 w-3 mr-0.5" />
+                          {plan.badge}
+                        </Badge>
+                      )}
+                      <Badge
+                        variant={isActive ? "active" : "default"}
+                        size="sm"
+                        withDot
+                      >
+                        {isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardDescription className="text-xs text-muted-foreground break-words leading-relaxed mt-1">
+                    <EllipsisCell as="span" value={plan.description} />
+                  </CardDescription>
+                </CardHeader>
 
-                <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-2 text-xs">
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span>Numeric Amount (INR):</span>
-                    <span className="font-bold text-foreground font-mono flex items-center">
-                      <IndianRupee className="h-3 w-3 mr-0.5" />
-                      {plan.amount.toLocaleString("en-IN")}
+                <CardContent className="space-y-6">
+                  <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+                    <span className="text-3xl font-extrabold tracking-tight text-foreground shrink-0">
+                      {plan.formatted_price}
                     </span>
+                    {plan.billing_cycle && (
+                      <span className="text-sm text-muted-foreground font-medium break-words">
+                        {plan.billing_cycle}
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span>Currency:</span>
-                    <span className="font-bold text-foreground font-mono">{plan.currency}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span>Plan Duration:</span>
-                    <Badge variant="outline" className="font-bold text-foreground font-mono inline-flex items-center justify-center leading-none">
-                      {plan.duration_days ?? 30} days
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span>Active Status:</span>
-                    <span className="font-bold text-emerald-600 flex items-center">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                      Active
-                    </span>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-border/60">
-                  <Button
-                    variant="default"
-                    className="flex-1 font-semibold shadow-xs gap-1.5"
-                    onClick={() => handleEditPlan(plan)}
-                  >
-                    <Edit className="h-4 w-4 shrink-0" />
-                    <span>Edit Pricing</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 font-semibold gap-1.5 shrink-0"
-                    onClick={() => handleDeletePlan(plan)}
-                    title="Delete Plan"
-                  >
-                    <Trash2 className="h-4 w-4 shrink-0" />
-                    <span>Delete</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-2 text-xs">
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span>Numeric Amount (INR):</span>
+                      <span className="font-bold text-foreground font-mono flex items-center">
+                        <IndianRupee className="h-3 w-3 mr-0.5" />
+                        {plan.amount.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span>Currency:</span>
+                      <span className="font-bold text-foreground font-mono">{plan.currency}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span>Plan Duration:</span>
+                      <Badge variant="outline" className="font-bold text-foreground font-mono inline-flex items-center justify-center leading-none">
+                        {plan.duration_days ?? 30} days
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between text-muted-foreground pt-1 border-t border-border/50">
+                      <span className="font-medium">Plan Availability:</span>
+                      <button
+                        type="button"
+                        disabled={isToggling}
+                        onClick={() => handleToggleStatus(plan)}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition-all border ${
+                          isActive
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                            : "bg-muted text-muted-foreground border-border hover:bg-muted/80 hover:text-foreground"
+                        }`}
+                        title={isActive ? "Click to deactivate plan" : "Click to activate plan"}
+                      >
+                        {isToggling ? (
+                          <RefreshCw className="h-3 w-3 animate-spin" />
+                        ) : isActive ? (
+                          <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                        ) : (
+                          <XCircle className="h-3 w-3 text-muted-foreground" />
+                        )}
+                        <span>{isActive ? "Active (Enabled)" : "Inactive (Disabled)"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+                    <Button
+                      variant="default"
+                      className="flex-1 font-semibold shadow-xs gap-1.5"
+                      onClick={() => handleEditPlan(plan)}
+                    >
+                      <Edit className="h-4 w-4 shrink-0" />
+                      <span>Edit Pricing</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 font-semibold gap-1.5 shrink-0"
+                      onClick={() => handleDeletePlan(plan)}
+                      title="Delete Plan"
+                    >
+                      <Trash2 className="h-4 w-4 shrink-0" />
+                      <span>Delete</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 

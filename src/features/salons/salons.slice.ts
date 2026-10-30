@@ -79,6 +79,7 @@ export const salonsSlice = createSlice({
         const arg = action.meta.arg;
         const isUnfiltered =
           !arg?.status &&
+          !arg?.plan &&
           arg?.is_active === undefined &&
           (!arg?.search || !arg.search.trim());
 
