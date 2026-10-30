@@ -40,8 +40,8 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
     defaultValues: {
       name: "",
       code: "",
-      amount: 2499,
-      duration_days: 30,
+      amount: undefined,
+      duration_days:undefined,
       billing_cycle: "",
       badge: "",
       description: "",

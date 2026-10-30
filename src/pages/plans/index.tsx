@@ -17,7 +17,6 @@ import {
   IndianRupee,
   Plus,
   Trash2,
-  Sparkles,
 } from "lucide-react";
 import { EllipsisCell } from "@/components/ui/ellipsis-cell";
 import { showSnackbar } from "@/components/ui/snackbar";
@@ -39,11 +38,19 @@ export const PlansPage: React.FC = () => {
   }, [dispatch]);
 
   const handleEditPlan = (plan: BackendPlan) => {
+    if (plan.is_active === false) {
+      showSnackbar("Cannot edit a deactivated plan. Please activate it first.", "error");
+      return;
+    }
     setSelectedPlan(plan);
     setEditModalOpen(true);
   };
 
   const handleDeletePlan = (plan: BackendPlan) => {
+    if (plan.is_active === false) {
+      showSnackbar("Cannot delete a deactivated plan. Please activate it first.", "error");
+      return;
+    }
     setSelectedPlan(plan);
     setDeleteModalOpen(true);
   };
@@ -112,21 +119,6 @@ export const PlansPage: React.FC = () => {
                     <CardTitle className="text-xl font-bold text-foreground">
                       <EllipsisCell as="span" value={plan.name} />
                     </CardTitle>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {plan.badge && (
-                        <Badge variant="info" size="sm" className="font-semibold text-[10px]">
-                          <Sparkles className="h-3 w-3 mr-0.5" />
-                          {plan.badge}
-                        </Badge>
-                      )}
-                      <Badge
-                        variant={isActive ? "active" : "default"}
-                        size="sm"
-                        withDot
-                      >
-                        {isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
                   </div>
                   <CardDescription className="text-xs text-muted-foreground break-words leading-relaxed mt-1">
                     <EllipsisCell as="span" value={plan.description} />
@@ -164,27 +156,29 @@ export const PlansPage: React.FC = () => {
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between text-muted-foreground pt-1 border-t border-border/50">
-                      <span className="font-medium">Plan Availability:</span>
-                      <button
+                      <span className="font-medium">Plan Status:</span>
+                      <Button
                         type="button"
+                        size="sm"
+                        variant={isActive ? "outline" : "default"}
                         disabled={isToggling}
+                        isLoading={isToggling}
                         onClick={() => handleToggleStatus(plan)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition-all border ${
+                        className={`h-7 px-3 text-xs font-semibold gap-1.5 cursor-pointer shadow-xs ${
                           isActive
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
-                            : "bg-muted text-muted-foreground border-border hover:bg-muted/80 hover:text-foreground"
+                            ? "border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60"
+                            : "bg-primary text-primary-foreground hover:bg-primary/90"
                         }`}
-                        title={isActive ? "Click to deactivate plan" : "Click to activate plan"}
                       >
-                        {isToggling ? (
-                          <RefreshCw className="h-3 w-3 animate-spin" />
-                        ) : isActive ? (
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                        ) : (
-                          <XCircle className="h-3 w-3 text-muted-foreground" />
+                        {!isToggling && (
+                          isActive ? (
+                            <XCircle className="h-3.5 w-3.5 text-destructive" />
+                          ) : (
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />
+                          )
                         )}
-                        <span>{isActive ? "Active (Enabled)" : "Inactive (Disabled)"}</span>
-                      </button>
+                        <span>{isActive ? "Deactivate" : "Activate"}</span>
+                      </Button>
                     </div>
                   </div>
 
@@ -192,6 +186,7 @@ export const PlansPage: React.FC = () => {
                     <Button
                       variant="default"
                       className="flex-1 font-semibold shadow-xs gap-1.5"
+                      disabled={!isActive}
                       onClick={() => handleEditPlan(plan)}
                     >
                       <Edit className="h-4 w-4 shrink-0" />
@@ -199,9 +194,9 @@ export const PlansPage: React.FC = () => {
                     </Button>
                     <Button
                       variant="outline"
-                      className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 font-semibold gap-1.5 shrink-0"
+                      className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 font-semibold gap-1.5 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+                      disabled={!isActive}
                       onClick={() => handleDeletePlan(plan)}
-                      title="Delete Plan"
                     >
                       <Trash2 className="h-4 w-4 shrink-0" />
                       <span>Delete</span>
