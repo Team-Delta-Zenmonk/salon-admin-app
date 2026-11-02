@@ -39,7 +39,8 @@ interface CreateSalonModalProps {
 
 export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onClose }) => {
   const dispatch = useAppDispatch();
-  const { plans: backendPlans } = useAppSelector((state) => state.plans);
+  const { plans: allBackendPlans } = useAppSelector((state) => state.plans);
+  const backendPlans = allBackendPlans.filter((p) => p.is_active !== false);
   const [slugModified, setSlugModified] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

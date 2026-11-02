@@ -49,15 +49,20 @@ export const PlanSelect: React.FC<PlanSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const backendPlans = filterOutTrial
-    ? allBackendPlans.filter((p) => p.code !== "trial" && p.id !== "trial")
-    : allBackendPlans;
+  const backendPlans = allBackendPlans.filter((p) => {
+    if (filterOutTrial && (p.code === "trial" || p.id === "trial")) return false;
+    if (p.is_active === false) return false;
+    return true;
+  });
+
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    if (isOpen && backendPlans.length === 0) {
+    if (isOpen && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
       dispatch(fetchSubscriptionPlans({ page: 1, limit: 10 }));
     }
-  }, [isOpen, backendPlans.length, dispatch]);
+  }, [isOpen, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
