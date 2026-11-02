@@ -24,7 +24,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isBusy = isLoading || isSubmitting;
-  const planCode = plan?.code || (plan?.id as string);
+  const planCode = plan?.code || (plan?.id !== undefined ? String(plan.id) : "");
 
   const {
     register,
@@ -42,6 +42,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
       reset({
         amount: plan.amount,
         name: plan.name,
+        code: plan.code || String(plan.id),
         description: plan.description || "",
         billing_cycle: plan.billing_cycle || "",
         duration_days: plan.duration_days || 30,
@@ -68,6 +69,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
           payload: {
             amount: Number(data.amount),
             name: data.name,
+            code: data.code || plan.code || String(plan.id),
             description: data.description ? data.description.trim() : null,
             billing_cycle: data.billing_cycle || undefined,
             duration_days: Number(data.duration_days),
@@ -118,7 +120,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
           </label>
           <div className="relative">
             <IndianRupee className="absolute left-3 top-[50%] z-1 h-4 w-4 text-muted-foreground translate-y-[-50%]" />
-            <Input type="number" step="1" className="pl-9" {...register("amount")} placeholder="e.g. 2499" />
+            <Input type="number" step="1" max={100000} className="pl-9" {...register("amount")} placeholder="e.g. 2499" />
           </div>
           {errors.amount ? (
             <p className="mt-1 text-xs text-destructive">{errors.amount.message}</p>

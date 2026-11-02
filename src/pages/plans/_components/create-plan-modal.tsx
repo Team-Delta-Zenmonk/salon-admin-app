@@ -173,9 +173,10 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
             <Input
               type="number"
               step="1"
+              max={100000}
               className="pl-9"
               {...register("amount")}
-              placeholder="e.g. 0 or 2499"
+              placeholder="e.g. 2499"
             />
           </div>
           {errors.amount && (

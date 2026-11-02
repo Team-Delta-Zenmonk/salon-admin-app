@@ -19,36 +19,33 @@ export const getCreatePlanSchema = (currencyCode?: string) => {
         .refine((val) => val.toLowerCase().trim() !== "trial", {
           message: "Code 'trial' is a reserved system tier and cannot be created",
         }),
-      amount: z
-        .union([z.string(), z.number()])
-        .refine((val) => val !== "" && val !== undefined && val !== null, {
-          message: "Required",
-        })
-        .transform((val) => Number(val))
-        .refine((val) => !isNaN(val), {
-          message: "Amount must be a number",
-        })
-        .refine((val) => val >= currencyConfig.minChargeAmount, {
-          message: `Plan price must be at least ${currencyConfig.symbol}${currencyConfig.minChargeAmount} for paid plans (minimum payment requirement)`,
-        }),
-      duration_days: z
-        .union([z.string(), z.number()])
-        .refine((val) => val !== "" && val !== undefined && val !== null, {
-          message: "Required",
-        })
-        .transform((val) => Number(val))
-        .refine((val) => !isNaN(val), {
-          message: "Duration days must be a number",
-        })
-        .refine((val) => Number.isInteger(val), {
-          message: "Duration must be an integer number of days",
-        })
-        .refine((val) => val >= 1, {
-          message: "Duration must be at least 1 day",
-        })
-        .refine((val) => val <= 365, {
-          message: "Duration cannot exceed 365 days",
-        }),
+      amount: z.preprocess(
+        (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+        z
+          .number({
+            required_error: "Required",
+            invalid_type_error: "Amount must be a number",
+          })
+          .min(
+            currencyConfig.minChargeAmount,
+            `Plan price must be at least ${currencyConfig.symbol}${currencyConfig.minChargeAmount} for paid plans (minimum payment requirement)`
+          )
+          .max(
+            100000,
+            `Maximum plan price can be ${currencyConfig.symbol}1,00,000 only`
+          )
+      ),
+      duration_days: z.preprocess(
+        (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+        z
+          .number({
+            required_error: "Required",
+            invalid_type_error: "Duration days must be a number",
+          })
+          .int("Duration must be an integer number of days")
+          .min(1, "Duration must be at least 1 day")
+          .max(365, "Duration cannot exceed 365 days")
+      ),
       billing_cycle: z
         .string()
         .trim()

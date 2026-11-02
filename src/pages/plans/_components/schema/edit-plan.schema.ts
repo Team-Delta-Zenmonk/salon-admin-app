@@ -7,40 +7,37 @@ export const editPlanSchema = z.object({
     .trim()
     .min(1, "Required")
     .max(255, "Plan name cannot exceed 255 characters"),
-  amount: z
-    .union([z.string(), z.number()])
-    .refine((val) => val !== "" && val !== undefined && val !== null, {
-      message: "Required",
-    })
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val), {
-      message: "Amount must be a number",
-    })
-    .refine((val) => val >= 0, {
-      message: "Price amount cannot be negative",
-    }),
-  duration_days: z
-    .union([z.string(), z.number()])
-    .refine((val) => val !== "" && val !== undefined && val !== null, {
-      message: "Required",
-    })
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val), {
-      message: "Duration days must be a number",
-    })
-    .refine((val) => Number.isInteger(val), {
-      message: "Duration must be an integer number of days",
-    })
-    .refine((val) => val >= 1, {
-      message: "Duration must be at least 1 day",
-    })
-    .refine((val) => val <= 365, {
-      message: "Duration cannot exceed 365 days",
-    }),
+  amount: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z
+      .number({
+        required_error: "Required",
+        invalid_type_error: "Amount must be a number",
+      })
+      .min(0, "Price amount cannot be negative")
+      .max(100000, "Maximum plan price can be ₹1,00,000 only")
+  ),
+  duration_days: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z
+      .number({
+        required_error: "Required",
+        invalid_type_error: "Duration days must be a number",
+      })
+      .int("Duration must be an integer number of days")
+      .min(1, "Duration must be at least 1 day")
+      .max(365, "Duration cannot exceed 365 days")
+  ),
   billing_cycle: z
     .string()
     .trim()
     .max(50, "Billing cycle tag cannot exceed 50 characters")
+    .optional()
+    .or(z.literal("")),
+  code: z
+    .string()
+    .trim()
+    .max(50, "Plan code cannot exceed 50 characters")
     .optional()
     .or(z.literal("")),
   description: z
@@ -53,8 +50,10 @@ export const editPlanSchema = z.object({
 
 export const getEditPlanSchema = (planCode?: string, currencyCode?: string) => {
   const currencyConfig = getCurrencyConfig(currencyCode);
+  const normalizedCode = planCode?.toLowerCase().trim();
+  const isFreeTier = normalizedCode === "trial" || normalizedCode?.includes("trial");
+
   return editPlanSchema.superRefine((data, ctx) => {
-    const isFreeTier = planCode?.toLowerCase().trim() === "trial";
     if (!isFreeTier && data.amount < currencyConfig.minChargeAmount) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

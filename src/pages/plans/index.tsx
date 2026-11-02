@@ -162,7 +162,7 @@ export const PlansPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {plans.map((plan) => {
               const isToggling = togglingPlanUuid === plan.uuid;
               const isActive = plan.is_active !== false;
@@ -248,20 +248,20 @@ export const PlansPage: React.FC = () => {
                     <div className="flex items-center gap-2 pt-2 border-t border-border/60">
                       <Button
                         variant="default"
-                        className="flex-1 font-semibold shadow-xs gap-1.5"
-                      disabled={!isActive}
+                        className="flex-1 min-w-0 h-9 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold shadow-xs gap-1.5"
+                        disabled={!isActive}
                         onClick={() => handleEditPlan(plan)}
                       >
-                        <Edit className="h-4 w-4 shrink-0" />
-                        <span>Edit Pricing</span>
+                        <Edit className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">Edit Pricing</span>
                       </Button>
                       <Button
                         variant="outline"
-                        className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 font-semibold gap-1.5 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
-                      disabled={!isActive}
+                        className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 font-semibold gap-1.5 shrink-0 h-9 px-2.5 sm:px-3 text-xs sm:text-sm disabled:opacity-50 disabled:pointer-events-none"
+                        disabled={!isActive}
                         onClick={() => handleDeletePlan(plan)}
-                        >
-                        <Trash2 className="h-4 w-4 shrink-0" />
+                      >
+                        <Trash2 className="h-3.5 w-3.5 shrink-0" />
                         <span>Delete</span>
                       </Button>
                     </div>
