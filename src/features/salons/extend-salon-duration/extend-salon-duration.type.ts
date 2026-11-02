@@ -7,4 +7,12 @@ export interface ExtendSalonDurationPayload {
 export interface ExtendSalonDurationResponse {
   message: string;
   salon: Partial<import('../list-salons/list-salons.service').SalonItem>;
+  invoice?: {
+    id: number;
+    uuid: string;
+    invoice_number: string;
+    invoice_url?: string | null;
+    grand_total: number;
+    payment_status: string;
+  };
 }

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import dayjs from "dayjs";
-import { Zap, Calendar, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
+import { CheckCircle2, AlertCircle, RefreshCw, FileText, ArrowRight } from "lucide-react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { fetchSubscriptionPlans } from "@/features/plans/plans.action";
 import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS } from "@/common/enums/subscription.enum";
 import { showSnackbar } from "@/components/ui/snackbar";
 import { EllipsisCell } from "@/components/ui/ellipsis-cell";
+import { formatDate } from "@/lib/utils";
 
 const planSchema = z.object({
   selectedPlan: z.string().min(1, "Please select a plan"),
@@ -67,7 +68,7 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClos
   }, [dispatch, page, hasMore, isLoadingPlans]);
 
   const onSubmit = async (data: PlanForm) => {
-    if (isSubmitting) return;
+    if (isSubmitting || !salon) return;
     try {
       setIsSubmitting(true);
       setError(null);
@@ -75,11 +76,16 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClos
         subscription_plan: data.selectedPlan,
         subscription_status: SUBSCRIPTION_STATUS.ACTIVE,
       };
-      await dispatch(updateSalonPlanAction({ uuid: salon!.uuid, payload })).unwrap();
-      showSnackbar("Subscription plan updated successfully");
+      const result = await dispatch(updateSalonPlanAction({ uuid: salon.uuid, payload })).unwrap();
+      const invoiceNum = result.invoice?.invoice_number;
+      showSnackbar(
+        invoiceNum
+          ? `Plan activated successfully! Invoice ${invoiceNum} generated.`
+          : "Subscription plan updated and invoice generated successfully"
+      );
       onClose();
     } catch (err: any) {
-      setError(typeof err === "string" ? err : "Failed to update subscription plan");
+      setError(typeof err === "string" ? err : "Failed to activate plan and generate invoice");
     } finally {
       setIsSubmitting(false);
     }
@@ -96,26 +102,75 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClos
     return {
       id: p.uuid || p.code || String(p.id),
       name: p.name,
-      price:
+      code: p.code,
+    price:
         p.formatted_price === "Free"
           ? "Free"
           : `${p.formatted_price} ${durationLabel}`.trim(),
-      features: p.description,
+      duration_days: p.duration_days || 30,
+    features: p.description,
     };
   });
 
-  const selectedPlan = watch("selectedPlan");
+  const selectedPlanId = watch("selectedPlan");
+  const activeSelectedPlan = planTiers.find((p) => p.id === selectedPlanId);
+
+  const isCurrentlyActive =
+    salon.subscription_status === SUBSCRIPTION_STATUS.ACTIVE &&
+    salon.subscription_expires_at &&
+    new Date(salon.subscription_expires_at) > new Date();
+
+  const baseDate = isCurrentlyActive
+    ? new Date(salon.subscription_expires_at!)
+    : new Date();
+
+  const durationDaysToAdd = activeSelectedPlan?.duration_days || 30;
+  const projectedExpiry = dayjs(baseDate).add(durationDaysToAdd, "day").toDate();
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       preventClose={isSubmitting}
-      title="Update Subscription Plan"
-      description={`Change plan for "${salon.name}"`}
+      title="Buy & Activate Subscription Plan"
+      description={`Activate a plan for "${salon.name}". This will add plan duration and generate an invoice.`}
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        <div className="rounded-xl border border-border bg-muted/30 p-3.5 space-y-2 text-xs">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span>Currently Active Tier:</span>
+            <span className="font-semibold text-foreground capitalize">
+              {salon.subscription_plan || "None"} ({salon.subscription_status})
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span>Duration Base Date:</span>
+            <span className="font-mono font-medium text-foreground">
+              {isCurrentlyActive
+                ? `Current Expiry (${formatDate(salon.subscription_expires_at)})`
+                : "Today (Immediate)"}
+            </span>
+          </div>
+          {activeSelectedPlan && (
+            <div className="pt-2 border-t border-border flex flex-col gap-1.5 text-xs">
+              <div className="flex items-center justify-between text-primary font-medium">
+                <span className="flex items-center gap-1.5">
+                  <ArrowRight className="h-3.5 w-3.5" />
+                  Extended Expiry (+{durationDaysToAdd}d):
+                </span>
+                <span className="font-mono font-bold text-foreground">
+                  {formatDate(projectedExpiry)}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                <FileText className="h-3 w-3 shrink-0" />
+                <span>Invoice will be recorded as PAID and PDF will be generated & stored on Cloudinary</span>
+              </div>
+            </div>
+          )}
+        </div>
+
         {planTiers.length === 0 && isInitialLoading ? (
           <div className="py-12 flex flex-col items-center justify-center text-muted-foreground gap-2">
             <RefreshCw className="h-6 w-6 animate-spin text-primary" />
@@ -126,7 +181,7 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClos
             No plans available to select.
           </div>
         ) : (
-          <div id="update-plan-modal-scrollable" className="max-h-[380px] overflow-y-auto pr-1">
+          <div id="update-plan-modal-scrollable" className="max-h-[340px] overflow-y-auto pr-1">
             <InfiniteScroll
               dataLength={planTiers.length}
               next={loadMorePlans}
@@ -141,7 +196,7 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClos
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-1">
                 {planTiers.map((tier) => {
-                  const isSelected = tier.id === (selectedPlan ?? "");
+                  const isSelected = tier.id === (selectedPlanId ?? "");
                   return (
                     <div
                       key={tier.id}
@@ -157,6 +212,9 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClos
                       )}
                       <EllipsisCell value={tier.name} className="text-sm font-bold text-foreground" />
                       <p className="text-xs font-semibold text-primary mt-0.5">{tier.price}</p>
+                      <p className="text-[11px] font-mono text-muted-foreground mt-0.5">
+                        Duration: +{tier.duration_days} days
+                      </p>
                       <EllipsisCell
                         value={tier.features}
                         className="text-[11px] text-muted-foreground mt-2 line-clamp-2"
@@ -184,7 +242,7 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClos
             Cancel
           </Button>
           <Button type="submit" variant="default" isLoading={isSubmitting} disabled={isSubmitting} className="w-full sm:w-auto">
-            Update Plan
+            Buy & Activate Plan
           </Button>
         </div>
       </form>

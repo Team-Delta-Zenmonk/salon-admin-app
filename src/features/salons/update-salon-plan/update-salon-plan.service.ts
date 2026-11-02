@@ -13,6 +13,14 @@ export interface UpdateSalonPlanPayload {
 export interface UpdateSalonPlanResponse {
   message: string;
   salon: Partial<SalonItem>;
+  invoice?: {
+    id: number;
+    uuid: string;
+    invoice_number: string;
+    invoice_url?: string | null;
+    grand_total: number;
+    payment_status: string;
+  };
 }
 
 export const updateSalonPlanService = async (
