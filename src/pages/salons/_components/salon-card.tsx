@@ -17,6 +17,8 @@ export interface SalonCardProps {
   onExtendTrial: (salon: SalonItem) => void;
   onOverridePlan: (salon: SalonItem) => void;
   onToggleStatus: (salon: SalonItem) => void;
+  onUpdatePlan: (salon: SalonItem) => void;
+  onUpdateDuration: (salon: SalonItem) => void;
 }
 
 export const SalonCard: React.FC<SalonCardProps> = ({
@@ -24,9 +26,18 @@ export const SalonCard: React.FC<SalonCardProps> = ({
   onExtendTrial,
   onOverridePlan,
   onToggleStatus,
+  onUpdatePlan,
+  onUpdateDuration,
 }) => {
-  const { targetDate, countdown, isSuspended, hasCombinedExpiry, trialEndsAt } =
-    getSalonExpiryCountdown(salon);
+  const {
+    targetDate,
+    countdown,
+    isSuspended,
+    hasCombinedExpiry,
+    trialEndsAt,
+    primaryLabel,
+    isTrackingPlan,
+  } = getSalonExpiryCountdown(salon);
 
   return (
     <div className="p-4 sm:p-5 hover:bg-muted/20 transition-colors flex flex-col justify-between gap-3 text-left">
@@ -106,9 +117,9 @@ export const SalonCard: React.FC<SalonCardProps> = ({
                 {countdown.text}
               </p>
               <p className="text-[10px] text-muted-foreground">
-                Plan: {formatDate(targetDate)}
+                {primaryLabel}: {formatDate(targetDate)}
               </p>
-              {hasCombinedExpiry && trialEndsAt && (
+              {hasCombinedExpiry && trialEndsAt && isTrackingPlan && (
                 <p className="text-[9px] text-muted-foreground/80 mt-0.5 font-mono">
                   Trial: {formatDate(trialEndsAt)}
                 </p>
@@ -133,6 +144,8 @@ export const SalonCard: React.FC<SalonCardProps> = ({
           onExtendTrial={onExtendTrial}
           onOverridePlan={onOverridePlan}
           onToggleStatus={onToggleStatus}
+          onUpdatePlan={onUpdatePlan}
+          onUpdateDuration={onUpdateDuration}
         />
       </div>
     </div>
@@ -144,6 +157,8 @@ export interface SalonsCardsProps {
   onExtendTrial: (salon: SalonItem) => void;
   onOverridePlan: (salon: SalonItem) => void;
   onToggleStatus: (salon: SalonItem) => void;
+  onUpdatePlan: (salon: SalonItem) => void;
+  onUpdateDuration: (salon: SalonItem) => void;
 }
 
 export const SalonsCards: React.FC<SalonsCardsProps> = ({
@@ -151,6 +166,8 @@ export const SalonsCards: React.FC<SalonsCardsProps> = ({
   onExtendTrial,
   onOverridePlan,
   onToggleStatus,
+  onUpdatePlan,
+  onUpdateDuration,
 }) => {
   return (
     <div className="divide-y divide-border">
@@ -161,6 +178,8 @@ export const SalonsCards: React.FC<SalonsCardsProps> = ({
           onExtendTrial={onExtendTrial}
           onOverridePlan={onOverridePlan}
           onToggleStatus={onToggleStatus}
+          onUpdatePlan={onUpdatePlan}
+          onUpdateDuration={onUpdateDuration}
         />
       ))}
     </div>

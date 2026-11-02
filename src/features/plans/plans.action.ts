@@ -8,17 +8,19 @@ import {
   toggleSubscriptionPlanStatusService,
   type UpdatePlanPayload,
   type CreatePlanPayload,
+  type ListPlansParams,
+  type ListPlansResponse,
 } from "./plans.service";
 import type { BackendPlan } from "../salons/list-salons/list-salons.service";
 
 export const fetchSubscriptionPlans = createAsyncThunk<
-  BackendPlan[],
-  void,
+  ListPlansResponse,
+  ListPlansParams | void,
   { rejectValue: string }
->("plans/fetchSubscriptionPlans", async (_, thunkAPI) => {
+>("plans/fetchSubscriptionPlans", async (params, thunkAPI) => {
   try {
-    const plans = await getSubscriptionPlansService();
-    return plans;
+    const res = await getSubscriptionPlansService(params || undefined);
+    return res;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       return thunkAPI.rejectWithValue(

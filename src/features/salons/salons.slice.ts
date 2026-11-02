@@ -5,6 +5,7 @@ import { updateSalonStatusAction } from "./update-salon-status/update-salon-stat
 import { updateSalonPlanAction } from "./update-salon-plan/update-salon-plan.action";
 import type { SalonItem } from "./list-salons/list-salons.service";
 import { DEFAULT_PAGE_LIMIT } from "./list-salons/list-salons.service";
+import { extendSalonDurationAction } from "./extend-salon-duration/extend-salon-duration.action";
 
 export interface SalonsState {
   data: SalonItem[];
@@ -140,6 +141,20 @@ export const salonsSlice = createSlice({
       })
       .addCase(updateSalonPlanAction.rejected, (state, action) => {
         state.error = (action.payload as string) || "Failed to update salon plan";
+      })
+      // Duration-only reducer
+      .addCase(extendSalonDurationAction.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(extendSalonDurationAction.fulfilled, (state, { payload }) => {
+        state.actionMessage = payload.message || "Salon subscription duration extended";
+        const index = state.data.findIndex((s) => s.uuid === payload.uuid);
+        if (index !== -1) {
+          state.data[index] = { ...state.data[index], ...payload.salon };
+        }
+      })
+      .addCase(extendSalonDurationAction.rejected, (state, action) => {
+        state.error = (action.payload as string) || "Failed to extend salon duration";
       });
   },
 });

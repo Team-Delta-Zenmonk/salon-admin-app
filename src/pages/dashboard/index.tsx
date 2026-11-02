@@ -1,9 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  PlusCircle,
-  CheckCircle2,
-  Search,
-} from "lucide-react";
+import { PlusCircle, CheckCircle2, Search } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   listSalonsAction,
@@ -17,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { sanitizeSearchQuery } from "@/lib/utils";
 import { SalonsTable } from "@/pages/salons/_components/salons-table";
 import { ExtendTrialModal } from "@/pages/salons/_components/extend-trial-modal";
-import { OverridePlanModal } from "@/pages/salons/_components/override-plan-modal";
+import { UpdatePlanModal } from "@/pages/salons/_components/update-plan-modal";
+import { UpdateDurationModal } from "@/pages/salons/_components/update-duration-modal";
 import { ToggleStatusModal } from "@/pages/salons/_components/toggle-status-modal";
 import { CreateSalonModal } from "@/pages/salons/_components/create-salon-modal";
 import { SalonFilters } from "./_components/salon-filters";
@@ -44,28 +41,24 @@ export const DashboardPage: React.FC = () => {
   const [selectedSalon, setSelectedSalon] = useState<SalonItem | null>(null);
   const [trialModalOpen, setTrialModalOpen] = useState(false);
   const [planModalOpen, setPlanModalOpen] = useState(false);
+  const [durationModalOpen, setDurationModalOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const hasUserTypedRef = useRef(false);
 
-  const getFilterParams = (plan: string, statuses: string[], search: string) => {
-    return {
-      plan: plan !== "all" ? plan : undefined,
-      status: statuses.length > 0 ? statuses.join(",") : undefined,
-      search: search.trim() || undefined,
-    };
-  };
+  const getFilterParams = (plan: string, statuses: string[], search: string) => ({
+    plan: plan !== "all" ? plan : undefined,
+    status: statuses.length > 0 ? statuses.join(",") : undefined,
+    search: search.trim() || undefined,
+  });
 
   useEffect(() => {
     dispatch(listSalonsAction({ page: 1, limit: DEFAULT_PAGE_LIMIT, isAppend: false }));
   }, [dispatch]);
 
   useEffect(() => {
-    if (!hasUserTypedRef.current) {
-      return;
-    }
-
+    if (!hasUserTypedRef.current) return;
     const timer = setTimeout(() => {
       const activeFilters = getFilterParams(selectedPlan, selectedStatuses, searchInput);
       dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
@@ -98,6 +91,16 @@ export const DashboardPage: React.FC = () => {
     dispatch(listSalonsAction({ ...activeFilters, page: newPage, isAppend: false }));
   };
 
+  const handleUpdatePlan = (salon: SalonItem) => {
+    setSelectedSalon(salon);
+    setPlanModalOpen(true);
+  };
+
+  const handleUpdateDuration = (salon: SalonItem) => {
+    setSelectedSalon(salon);
+    setDurationModalOpen(true);
+  };
+
   const handleLoadMore = () => {
     if (isLoading || !hasMore) return;
     const activeFilters = getFilterParams(selectedPlan, selectedStatuses, searchInput);
@@ -124,12 +127,13 @@ export const DashboardPage: React.FC = () => {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Operations Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            Operations Dashboard
+          </h1>
           <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
             Real-time multi-tenant monitoring, SaaS entitlement governance, and platform health.
           </p>
         </div>
-
         <div className="flex items-center gap-3">
           <Button size="sm" onClick={() => setCreateModalOpen(true)} className="gap-1.5 shrink-0">
             <PlusCircle className="h-3.5 w-3.5 shrink-0" />
@@ -169,14 +173,9 @@ export const DashboardPage: React.FC = () => {
                 leftIcon={<Search className="h-4 w-4" />}
               />
             </div>
-
             <div className="shrink-0 flex items-center justify-end gap-2.5">
               {(selectedPlan !== "all" || selectedStatuses.length > 0) && (
-                <button
-                  type="button"
-                  onClick={handleResetFilters}
-                  className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer font-medium"
-                >
+                <button type="button" onClick={handleResetFilters} className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer font-medium">
                   Clear all
                 </button>
               )}
@@ -215,6 +214,8 @@ export const DashboardPage: React.FC = () => {
               setSelectedSalon(salon);
               setStatusModalOpen(true);
             }}
+            onUpdatePlan={handleUpdatePlan}
+            onUpdateDuration={handleUpdateDuration}
           />
         </CardContent>
       </Card>
@@ -228,10 +229,19 @@ export const DashboardPage: React.FC = () => {
         salon={selectedSalon}
       />
 
-      <OverridePlanModal
+      <UpdatePlanModal
         isOpen={planModalOpen}
         onClose={() => {
           setPlanModalOpen(false);
+          setSelectedSalon(null);
+        }}
+        salon={selectedSalon}
+      />
+
+      <UpdateDurationModal
+        isOpen={durationModalOpen}
+        onClose={() => {
+          setDurationModalOpen(false);
           setSelectedSalon(null);
         }}
         salon={selectedSalon}

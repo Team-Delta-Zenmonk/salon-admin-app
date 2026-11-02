@@ -13,6 +13,8 @@ export interface SalonsMobileViewProps {
   onExtendTrial: (salon: SalonItem) => void;
   onOverridePlan: (salon: SalonItem) => void;
   onToggleStatus: (salon: SalonItem) => void;
+  onUpdatePlan: (salon: SalonItem) => void;
+  onUpdateDuration: (salon: SalonItem) => void;
 }
 
 export const SalonsMobileView: React.FC<SalonsMobileViewProps> = ({
@@ -23,6 +25,8 @@ export const SalonsMobileView: React.FC<SalonsMobileViewProps> = ({
   onExtendTrial,
   onOverridePlan,
   onToggleStatus,
+  onUpdatePlan,
+  onUpdateDuration,
 }) => {
   const isLoadingRef = useRef(isLoading);
   const hasMoreRef = useRef(hasMore);
@@ -39,26 +43,23 @@ export const SalonsMobileView: React.FC<SalonsMobileViewProps> = ({
       if (typeof window !== "undefined" && window.innerWidth >= 700) {
         return;
       }
-
       if (isLoadingRef.current || !hasMoreRef.current) {
         return;
       }
-
       const container = document.getElementById("admin-main-content");
       if (container) {
         const { scrollTop, scrollHeight, clientHeight } = container;
         if (scrollTop > 20 && scrollHeight > clientHeight && scrollHeight - (scrollTop + clientHeight) < 100) {
-          isLoadingRef.current = true; // Synchronously lock to block rapid duplicate scroll events
+          isLoadingRef.current = true;
           onLoadMoreRef.current();
           return;
         }
       }
-
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollY = window.scrollY || document.documentElement.scrollTop;
       if (scrollY > 20 && documentHeight > windowHeight && documentHeight - (scrollY + windowHeight) < 100) {
-        isLoadingRef.current = true; // Synchronously lock
+        isLoadingRef.current = true;
         onLoadMoreRef.current();
       }
     };
@@ -84,6 +85,8 @@ export const SalonsMobileView: React.FC<SalonsMobileViewProps> = ({
         onExtendTrial={onExtendTrial}
         onOverridePlan={onOverridePlan}
         onToggleStatus={onToggleStatus}
+        onUpdatePlan={onUpdatePlan}
+        onUpdateDuration={onUpdateDuration}
       />
 
       {isLoading && (

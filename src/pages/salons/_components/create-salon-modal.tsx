@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -9,10 +9,6 @@ import {
   Globe,
   AlertCircle,
   RefreshCw,
-  CheckCircle2,
-  Sparkles,
-  Calendar,
-  Zap,
   Tag,
   Percent,
   IndianRupee,
@@ -22,10 +18,10 @@ import {
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PlanSelect } from "@/components/ui/plan-select";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { createSalonAction } from "@/features/salons/create-salon/create-salon.action";
 import { listSalonsAction } from "@/features/salons/list-salons/list-salons.action";
-import { fetchSubscriptionPlans } from "@/features/plans/plans.action";
 import { getStorefrontDomain } from "@/lib/domain";
 import {
   SUBSCRIPTION_PLAN,
@@ -78,26 +74,6 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
   const watchPlan = watch("plan");
   const watchDiscountType = watch("discount_type");
   const watchDiscountValue = watch("discount_value");
-
-  useEffect(() => {
-    if (isOpen) {
-      dispatch(fetchSubscriptionPlans());
-    }
-  }, [isOpen, dispatch]);
-
-  const iconMap: Record<string, React.ReactNode> = {
-    trial: <Sparkles className="h-4 w-4 text-amber-500" />,
-    monthly: <Calendar className="h-4 w-4 text-blue-500" />,
-    yearly: <Zap className="h-4 w-4 text-emerald-500" />,
-  };
-
-  const planOptions = backendPlans.map((p) => ({
-    id: p.code || String(p.id),
-    name: p.name,
-    price: p.formatted_price === "Free" ? "Free" : `${p.formatted_price} ${p.billing_cycle}`,
-    description: p.description,
-    icon: iconMap[p.code || String(p.id)] || <Zap className="h-4 w-4 text-primary" />,
-  }));
 
   const isPaidPlan = watchPlan !== SUBSCRIPTION_PLAN.TRIAL;
 
@@ -351,56 +327,18 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
           />
         </div>
 
-        <div className="space-y-2 pt-1">
+        <div className="space-y-1.5 pt-1">
           <label className="block text-xs font-semibold tracking-wide text-foreground">
             Initial Plan Tier *
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            {planOptions.map((plan) => {
-              const isSelected = watchPlan === plan.id;
-              return (
-                <div
-                  key={plan.id}
-                  onClick={() => {
-                    setValue("plan", plan.id, { shouldValidate: true });
-                    trigger("discount_value");
-                  }}
-                  className={`cursor-pointer rounded-xl border p-3 transition-all relative flex flex-col justify-between ${isSelected
-                      ? "border-primary bg-primary/5 ring-1 ring-primary shadow-xs"
-                      : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
-                    }`}
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <span className="shrink-0">{plan.icon}</span>
-                        <EllipsisCell
-                          as="span"
-                          value={plan.name}
-                          className="text-xs font-bold text-foreground"
-                          wrapperClassName="min-w-0 flex-1"
-                        />
-                      </div>
-                      {isSelected && (
-                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                      )}
-                    </div>
-                    <p className="text-xs font-bold text-primary break-words">{plan.price}</p>
-                    <EllipsisCell
-                      as="span"
-                      value={plan.description}
-                      className="text-[11px] text-muted-foreground mt-1 leading-snug break-words"
-                      wrapperClassName="min-w-0 flex-1"
-                      maxChars={50}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {errors.plan?.message && (
-            <p className="mt-1 text-xs text-destructive">{errors.plan.message}</p>
-          )}
+          <PlanSelect
+            value={watchPlan}
+            onChange={(val) => {
+              setValue("plan", val, { shouldValidate: true });
+              trigger("discount_value");
+            }}
+            error={errors.plan?.message}
+          />
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 transition-all">

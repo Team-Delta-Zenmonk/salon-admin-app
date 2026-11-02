@@ -19,7 +19,7 @@ export const SalonStatusBadge: React.FC<SalonStatusBadgeProps> = ({
 
   return (
     <Badge variant={variant} size={size} withDot className={className}>
-      {isSuspended ? "Suspended" : salon.subscription_status}
+      {isSuspended ? "Suspended" : variant}
     </Badge>
   );
 };

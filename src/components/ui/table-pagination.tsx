@@ -8,6 +8,7 @@ export interface TablePaginationProps {
   limit?: number;
   onPageChange: (newPage: number) => void;
   isLoading?: boolean;
+  itemLabel?: string;
 }
 
 const getPageNumbers = (current: number, totalPages: number): (number | string)[] => {
@@ -29,6 +30,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
   limit = 20,
   onPageChange,
   isLoading = false,
+  itemLabel = "tenants",
 }) => {
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const startItem = total === 0 ? 0 : (page - 1) * limit + 1;
@@ -42,10 +44,10 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
           <>
             Showing <span className="font-semibold text-foreground">{startItem}</span> to{" "}
             <span className="font-semibold text-foreground">{endItem}</span> of{" "}
-            <span className="font-semibold text-foreground">{total}</span> tenants
+            <span className="font-semibold text-foreground">{total}</span> {itemLabel}
           </>
         ) : (
-          "No tenants found"
+          `No ${itemLabel} found`
         )}
       </div>
 

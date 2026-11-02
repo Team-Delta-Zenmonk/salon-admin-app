@@ -30,6 +30,8 @@ export interface SalonsTableProps {
   onExtendTrial: (salon: SalonItem) => void;
   onOverridePlan: (salon: SalonItem) => void;
   onToggleStatus: (salon: SalonItem) => void;
+  onUpdatePlan: (salon: SalonItem) => void;
+  onUpdateDuration: (salon: SalonItem) => void;
 }
 
 export const SalonsTable: React.FC<SalonsTableProps> = ({
@@ -47,6 +49,8 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
   onExtendTrial,
   onOverridePlan,
   onToggleStatus,
+  onUpdatePlan,
+  onUpdateDuration,
 }) => {
   if (isLoading && salons.length === 0) {
     return (
@@ -62,12 +66,7 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
       <div className="py-16 text-center">
         <div className="text-destructive font-semibold mb-2">{error}</div>
         {onRetry && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRetry}
-            className="gap-1.5"
-          >
+          <Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5">
             <RefreshCw className="h-3.5 w-3.5 shrink-0" />
             Retry
           </Button>
@@ -94,7 +93,16 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
               <RefreshCw className="h-6 w-6 animate-spin text-primary" />
             </div>
           )}
-          <table className="w-full text-left text-xs text-foreground">
+          <table className="w-full  text-left text-xs text-foreground">
+            <colgroup>
+              <col className="w-[14%]" />
+              <col className="w-[12%]" />
+              <col className="w-[8%]" />
+              <col className="w-[10%]" />
+              <col className="w-[20%]" />
+              <col className="w-[12%]" />
+              <col className="w-32" />
+            </colgroup>
             <thead className="bg-muted/40 text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border">
               <tr>
                 <th className="py-2.5 px-4 sm:px-6">Tenant & Subdomain</th>
@@ -103,19 +111,23 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                 <th className="py-2.5 px-4">Status</th>
                 <th className="py-2.5 px-4">Plan/Trial Expiry</th>
                 <th className="py-2.5 px-4">Created</th>
-                <th className="py-2.5 px-4 sm:px-6 text-right">Actions</th>
+                            <th className="py-2.5 px-4 sm:px-6 text-right w-32">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border font-sans">
               {salons.map((salon) => {
-                const { targetDate, countdown, isSuspended, hasCombinedExpiry, trialEndsAt } =
-                  getSalonExpiryCountdown(salon);
-
+                const {
+                  targetDate,
+                  countdown,
+                  isSuspended,
+                  hasCombinedExpiry,
+                  trialEndsAt,
+                  primaryLabel,
+                  isTrackingPlan,
+                  planExpiresAt,
+                } = getSalonExpiryCountdown(salon);
                 return (
-                  <tr
-                    key={salon.uuid}
-                    className="hover:bg-muted/30 transition-colors group"
-                  >
+                  <tr key={salon.uuid} className="hover:bg-muted/30 transition-colors group">
                     <td className="py-2.5 px-4 sm:px-6 max-w-[200px]">
                       <EllipsisCell
                         value={salon.name}
@@ -172,19 +184,21 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                         <div>
                           <span
                             className={`font-semibold font-mono ${
-                              countdown.isExpired ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"
+                              countdown.isExpired
+                                ? "text-destructive"
+                                : "text-emerald-600 dark:text-emerald-400"
                             }`}
                           >
                             {countdown.text}
                           </span>
-                          <div className="text-[10px] text-muted-foreground">
-                            Plan: {formatDate(targetDate)}
+                          <div className="text-[10px] text-muted-foreground space-y-0.5 mt-0.5">
+                            <div>{primaryLabel}: {formatDate(targetDate)}</div>
+                            {hasCombinedExpiry && trialEndsAt && isTrackingPlan && (
+                              <div className="text-[9px] text-muted-foreground/80 font-mono">
+                                Trial: {formatDate(trialEndsAt)}
+                              </div>
+                            )}
                           </div>
-                          {hasCombinedExpiry && trialEndsAt && (
-                            <div className="text-[9px] text-muted-foreground/80 mt-0.5 font-mono">
-                              Trial: {formatDate(trialEndsAt)}
-                            </div>
-                          )}
                         </div>
                       ) : (
                         <span className="text-muted-foreground">No Expiry</span>
@@ -201,6 +215,8 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                         onExtendTrial={onExtendTrial}
                         onOverridePlan={onOverridePlan}
                         onToggleStatus={onToggleStatus}
+                        onUpdatePlan={onUpdatePlan}
+                        onUpdateDuration={onUpdateDuration}
                         className="justify-end"
                       />
                     </td>
@@ -210,7 +226,6 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
             </tbody>
           </table>
         </div>
-
         {onPageChange && (
           <TablePagination
             total={total}
@@ -232,6 +247,8 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
         onExtendTrial={onExtendTrial}
         onOverridePlan={onOverridePlan}
         onToggleStatus={onToggleStatus}
+        onUpdatePlan={onUpdatePlan}
+        onUpdateDuration={onUpdateDuration}
       />
     </>
   );

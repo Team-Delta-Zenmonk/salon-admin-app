@@ -65,8 +65,14 @@ export const listSalonsService = async (params: ListSalonsParams = {}): Promise<
   return res.data;
 };
 
-export const getSubscriptionPlansService = async (): Promise<BackendPlan[]> => {
-  const res = await axiosInstance.get<{ plans: BackendPlan[] }>("/admin/plans");
+export const getSubscriptionPlansService = async (
+  params?: { page?: number; limit?: number }
+): Promise<BackendPlan[]> => {
+  const queryParams = new URLSearchParams();
+  if (params?.page !== undefined) queryParams.append("page", params.page.toString());
+  if (params?.limit !== undefined) queryParams.append("limit", params.limit.toString());
+  const url = queryParams.toString() ? `/admin/plans?${queryParams.toString()}` : "/admin/plans";
+  const res = await axiosInstance.get<{ plans: BackendPlan[] }>(url);
   return res.data.plans;
 };
 

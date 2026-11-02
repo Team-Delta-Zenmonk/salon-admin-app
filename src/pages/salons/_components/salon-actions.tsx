@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, Zap, ShieldBan, ShieldCheck } from "lucide-react";
+import { Calendar, Zap, Clock, ShieldBan, ShieldCheck } from "lucide-react";
 import type { SalonItem } from "@/features/salons";
 import { Button } from "@/components/ui/button";
 import { isSalonSuspended } from "../salons.utils";
@@ -10,6 +10,8 @@ export interface SalonActionsProps {
   onExtendTrial: (salon: SalonItem) => void;
   onOverridePlan: (salon: SalonItem) => void;
   onToggleStatus: (salon: SalonItem) => void;
+  onUpdatePlan: (salon: SalonItem) => void;
+  onUpdateDuration: (salon: SalonItem) => void;
   className?: string;
   size?: "xs" | "sm";
 }
@@ -19,6 +21,8 @@ export const SalonActions: React.FC<SalonActionsProps> = ({
   onExtendTrial,
   onOverridePlan,
   onToggleStatus,
+  onUpdatePlan,
+  onUpdateDuration,
   className,
   size = "xs",
 }) => {
@@ -26,28 +30,44 @@ export const SalonActions: React.FC<SalonActionsProps> = ({
 
   return (
     <div className={cn("flex items-center gap-1.5 flex-wrap sm:flex-nowrap", className)}>
-      <Button
-        variant="secondary"
-        size={size}
-        className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
-        title="Extend Trial"
-        onClick={() => onExtendTrial(salon)}
-      >
-        <Calendar className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400 shrink-0" />
-        <span>+Trial</span>
-      </Button>
+      {!isSuspended && (
+        <>
+          <Button
+            variant="secondary"
+            size={size}
+            className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
+            title="Extend Trial"
+            onClick={() => onExtendTrial(salon)}
+          >
+            <Calendar className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>+Trial</span>
+          </Button>
 
-      <Button
-        variant="secondary"
-        size={size}
-        className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
-        title="Override Entitlement Plan"
-        onClick={() => onOverridePlan(salon)}
-      >
-        <Zap className="h-2.5 w-2.5 text-primary shrink-0" />
-        <span>Plan</span>
-      </Button>
+          <Button
+            variant="secondary"
+            size={size}
+            className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
+            title="Update Subscription Plan"
+            onClick={() => onUpdatePlan(salon)}
+          >
+            <Zap className="h-2.5 w-2.5 text-primary shrink-0" />
+            <span>Plan</span>
+          </Button>
 
+          <Button
+            variant="secondary"
+            size={size}
+            className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
+            title="Update Subscription Duration"
+            onClick={() => onUpdateDuration(salon)}
+          >
+            <Clock className="h-2.5 w-2.5 text-primary shrink-0" />
+            <span>Duration</span>
+          </Button>
+        </>
+      )}
+
+      {/* Toggle Status */}
       <Button
         variant={isSuspended ? "default" : "outline"}
         size={size}

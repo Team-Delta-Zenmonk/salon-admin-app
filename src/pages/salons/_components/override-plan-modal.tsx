@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import type { SalonItem } from "@/features/salons/list-salons/list-salons.service";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateSalonPlanAction } from "@/features/salons/update-salon-plan/update-salon-plan.action";
+import { extendSalonDurationAction } from "@/features/salons/extend-salon-duration/extend-salon-duration.action";
 import { fetchSubscriptionPlans } from "@/features/plans/plans.action";
-import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS, type SubscriptionPlan } from "@/common/enums/subscription.enum";
+import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS } from "@/common/enums/subscription.enum";
 import { showSnackbar } from "@/components/ui/snackbar";
 import { EllipsisCell } from "@/components/ui/ellipsis-cell";
 
@@ -126,21 +127,37 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
     onClose();
   };
 
-  const onSubmit = async (data: OverridePlanForm) => {
+  const onSubmitPlan = async (data: OverridePlanForm) => {
+    if (isSubmitting) return;
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      const payload = {
+        subscription_plan: data.selectedPlan,
+        subscription_status: SUBSCRIPTION_STATUS.ACTIVE,
+      };
+
+      await dispatch(updateSalonPlanAction({ uuid: salon.uuid, payload })).unwrap();
+      showSnackbar('Subscription plan updated successfully');
+    } catch (err: any) {
+      setError(typeof err === 'string' ? err : 'Failed to update subscription plan');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const onSubmitDuration = async (data: OverridePlanForm) => {
     if (isSubmitting) return;
     try {
       setIsSubmitting(true);
       setError(null);
 
       const payload: {
-        subscription_plan: SubscriptionPlan | string;
         subscription_status: typeof SUBSCRIPTION_STATUS.ACTIVE;
         extend_subscription_days?: number;
         duration_days?: number;
-      } = {
-        subscription_plan: data.selectedPlan,
-        subscription_status: SUBSCRIPTION_STATUS.ACTIVE,
-      };
+      } = { subscription_status: SUBSCRIPTION_STATUS.ACTIVE };
 
       if (isCurrentlyActive) {
         payload.extend_subscription_days = data.durationDays;
@@ -148,22 +165,18 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
         payload.duration_days = data.durationDays;
       }
 
-      await dispatch(
-        updateSalonPlanAction({
-          uuid: salon.uuid,
-          payload,
-        })
-      ).unwrap();
-
-      setIsSubmitting(false);
-      handleClose(true);
-      showSnackbar("Subscription plan overridden successfully");
+      await dispatch(extendSalonDurationAction({ uuid: salon.uuid, payload })).unwrap();
+      showSnackbar('Subscription duration updated successfully');
     } catch (err: any) {
-      setError(typeof err === "string" ? err : "Failed to override subscription plan");
+      setError(typeof err === 'string' ? err : 'Failed to update duration');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Remove previous combined onSubmit
+  // const onSubmit = async (data: OverridePlanForm) => { ... };
+
 
   return (
     <Modal
@@ -174,7 +187,7 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
       description={`Grant or adjust subscription entitlement for "${salon.name}".`}
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+      <form onSubmit={(e) => e.preventDefault()} noValidate className="space-y-4">
         <div className="rounded-xl border border-border bg-background p-4 flex items-center justify-between text-xs">
           <div>
             <span className="text-muted-foreground block">Current Plan:</span>
@@ -303,14 +316,27 @@ export const OverridePlanModal: React.FC<OverridePlanModalProps> = ({
           >
             Cancel
           </Button>
+          {watchSelectedPlan && (
+            <Button
+              type="button"
+              variant="default"
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+              onClick={handleSubmit(onSubmitPlan)}
+              className="w-full sm:w-auto"
+            >
+              Update Plan
+            </Button>
+          )}
           <Button
-            type="submit"
+            type="button"
             variant="default"
             isLoading={isSubmitting}
             disabled={isSubmitting}
+            onClick={handleSubmit(onSubmitDuration)}
             className="w-full sm:w-auto"
           >
-            Apply Plan & Activate
+            Update Duration
           </Button>
         </div>
       </form>

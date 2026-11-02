@@ -28,6 +28,10 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 3003,
     },
+    preview: {
+      host: true,
+      port: 3003,
+    },
   };
 });
 

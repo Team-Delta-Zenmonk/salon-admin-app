@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { BackendPlan } from "../salons/list-salons/list-salons.service";
+import type { ListPlansResponse } from "./plans.service";
 import {
   fetchSubscriptionPlans,
   updateSubscriptionPlan,
@@ -10,7 +11,12 @@ import {
 
 export interface PlansState {
   plans: BackendPlan[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
   isLoading: boolean;
+  isInitialLoading: boolean;
   togglingPlanUuid: string | null;
   error: string | null;
   successMessage: string | null;
@@ -18,7 +24,12 @@ export interface PlansState {
 
 const initialState: PlansState = {
   plans: [],
+  total: 0,
+  page: 1,
+  limit: 10,
+  hasMore: false,
   isLoading: false,
+  isInitialLoading: true,
   togglingPlanUuid: null,
   error: null,
   successMessage: null,
@@ -42,19 +53,46 @@ export const plansSlice = createSlice({
     clearPlansSuccessMessage(state) {
       state.successMessage = null;
     },
+    clearPlans(state) {
+      state.plans = [];
+      state.total = 0;
+      state.page = 1;
+      state.hasMore = false;
+      state.isLoading = false;
+      state.isInitialLoading = true;
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchSubscriptionPlans.pending, (state) => {
+      .addCase(fetchSubscriptionPlans.pending, (state, { meta }) => {
         state.isLoading = true;
         state.error = null;
+        const page = meta.arg?.page ?? 1;
+        if (page === 1) {
+          state.isInitialLoading = true;
+        }
       })
-      .addCase(fetchSubscriptionPlans.fulfilled, (state, action: PayloadAction<BackendPlan[]>) => {
+      .addCase(fetchSubscriptionPlans.fulfilled, (state, action: PayloadAction<ListPlansResponse>) => {
         state.isLoading = false;
-        state.plans = action.payload;
+        state.isInitialLoading = false;
+        const { plans, pagination } = action.payload;
+
+        if (pagination.page === 1) {
+          state.plans = plans;
+        } else {
+          const existingUuids = new Set(state.plans.map((p) => p.uuid));
+          const newPlans = (plans || []).filter((p) => !existingUuids.has(p.uuid));
+          state.plans = [...state.plans, ...newPlans];
+        }
+
+        state.total = pagination.total;
+        state.page = pagination.page;
+        state.limit = pagination.limit;
+        state.hasMore = plans?.length === pagination.limit && state.plans.length < pagination.total;
       })
       .addCase(fetchSubscriptionPlans.rejected, (state, action) => {
         state.isLoading = false;
+        state.isInitialLoading = false;
         state.error = (action.payload as string) || "Failed to fetch plans";
       })
       .addCase(updateSubscriptionPlan.pending, (state) => {
@@ -127,5 +165,5 @@ export const plansSlice = createSlice({
   },
 });
 
-export const { clearPlansError, clearPlansSuccessMessage } = plansSlice.actions;
+export const { clearPlansError, clearPlansSuccessMessage, clearPlans } = plansSlice.actions;
 export default plansSlice.reducer;
