@@ -87,12 +87,22 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClos
 
   if (!salon) return null;
 
-  const planTiers = backendPlans.map((p) => ({
-    id: p.uuid || p.code || String(p.id),
-    name: p.name,
-    price: `${p.formatted_price} ${p.billing_cycle}`,
-    features: p.description,
-  }));
+  const planTiers = backendPlans.map((p) => {
+    const durationLabel =
+      p.duration_days != null
+        ? `${p.duration_days} ${p.duration_days === 1 ? "Day" : "Days"}`
+        : (p.billing_cycle || "");
+
+    return {
+      id: p.uuid || p.code || String(p.id),
+      name: p.name,
+      price:
+        p.formatted_price === "Free"
+          ? "Free"
+          : `${p.formatted_price} ${durationLabel}`.trim(),
+      features: p.description,
+    };
+  });
 
   const selectedPlan = watch("selectedPlan");
 

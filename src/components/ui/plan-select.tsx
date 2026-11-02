@@ -83,15 +83,25 @@ export const PlanSelect: React.FC<PlanSelectProps> = ({
     dispatch(fetchSubscriptionPlans({ page: page + 1, limit: 10 }));
   }, [dispatch, page, hasMore, isLoadingPlans]);
 
-  const fetchedOptions = backendPlans.map((p) => ({
-    id: p.code || String(p.id),
-    rawId: p.id,
-    uuid: p.uuid,
-    name: p.name,
-    price: p.formatted_price === "Free" ? "Free" : `${p.formatted_price} ${p.billing_cycle}`,
-    description: p.description,
-    icon: iconMap[p.code || String(p.id)] || <Zap className="h-4 w-4 text-primary" />,
-  }));
+  const fetchedOptions = backendPlans.map((p) => {
+    const durationLabel =
+      p.duration_days != null
+        ? `${p.duration_days} ${p.duration_days === 1 ? "Day" : "Days"}`
+        : (p.billing_cycle || "");
+
+    return {
+      id: p.code || String(p.id),
+      rawId: p.id,
+      uuid: p.uuid,
+      name: p.name,
+      price:
+        p.formatted_price === "Free"
+          ? "Free"
+          : `${p.formatted_price} ${durationLabel}`.trim(),
+      description: p.description,
+      icon: iconMap[p.code || String(p.id)] || <Zap className="h-4 w-4 text-primary" />,
+    };
+  });
 
   const hasTrialInFetched = fetchedOptions.some(
     (p) => p.id === "trial" || p.rawId === "trial" || p.uuid === "trial"
