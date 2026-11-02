@@ -122,9 +122,6 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                   isSuspended,
                   hasCombinedExpiry,
                   trialEndsAt,
-                  primaryLabel,
-                  isTrackingPlan,
-                  planExpiresAt,
                 } = getSalonExpiryCountdown(salon);
                 return (
                   <tr key={salon.uuid} className="hover:bg-muted/30 transition-colors group">
@@ -185,20 +182,22 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                           <span
                             className={`font-semibold font-mono ${
                               countdown.isExpired
-                                ? "text-destructive"
+                                ? salon.subscription_status === "active"
+                                  ? "text-muted-foreground"
+                                  : "text-destructive"
                                 : "text-emerald-600 dark:text-emerald-400"
                             }`}
                           >
                             {countdown.text}
                           </span>
-                          <div className="text-[10px] text-muted-foreground space-y-0.5 mt-0.5">
-                            <div>{primaryLabel}: {formatDate(targetDate)}</div>
-                            {hasCombinedExpiry && trialEndsAt && isTrackingPlan && (
-                              <div className="text-[9px] text-muted-foreground/80 font-mono">
-                                Trial: {formatDate(trialEndsAt)}
-                              </div>
-                            )}
+                          <div className="text-[10px] text-muted-foreground">
+                            Plan: {formatDate(targetDate)}
                           </div>
+                          {hasCombinedExpiry && trialEndsAt && (
+                            <div className="text-[9px] text-muted-foreground/80 mt-0.5 font-mono">
+                              Trial: {formatDate(trialEndsAt)}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <span className="text-muted-foreground">No Expiry</span>

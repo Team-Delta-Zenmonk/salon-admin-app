@@ -35,8 +35,6 @@ export const SalonCard: React.FC<SalonCardProps> = ({
     isSuspended,
     hasCombinedExpiry,
     trialEndsAt,
-    primaryLabel,
-    isTrackingPlan,
   } = getSalonExpiryCountdown(salon);
 
   return (
@@ -109,17 +107,20 @@ export const SalonCard: React.FC<SalonCardProps> = ({
           ) : targetDate ? (
             <div>
               <p
-                className={`font-semibold font-mono text-[11px] ${countdown.isExpired
-                  ? "text-destructive"
-                  : "text-emerald-600 dark:text-emerald-400"
-                  }`}
+                className={`font-semibold font-mono text-[11px] ${
+                  countdown.isExpired
+                    ? salon.subscription_status === "active"
+                      ? "text-muted-foreground"
+                      : "text-destructive"
+                    : "text-emerald-600 dark:text-emerald-400"
+                }`}
               >
                 {countdown.text}
               </p>
               <p className="text-[10px] text-muted-foreground">
-                {primaryLabel}: {formatDate(targetDate)}
+                Plan: {formatDate(targetDate)}
               </p>
-              {hasCombinedExpiry && trialEndsAt && isTrackingPlan && (
+              {hasCombinedExpiry && trialEndsAt && (
                 <p className="text-[9px] text-muted-foreground/80 mt-0.5 font-mono">
                   Trial: {formatDate(trialEndsAt)}
                 </p>
