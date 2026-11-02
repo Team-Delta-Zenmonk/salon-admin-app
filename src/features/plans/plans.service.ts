@@ -23,7 +23,7 @@ export interface CreatePlanPayload {
 export interface ListPlansParams {
   page?: number;
   limit?: number;
-  is_active?: boolean;
+  include_inactive?: boolean;
 }
 
 export interface ListPlansResponse {
@@ -41,7 +41,7 @@ export const getSubscriptionPlansService = async (
   const queryParams = new URLSearchParams();
   if (params?.page !== undefined) queryParams.append("page", params.page.toString());
   if (params?.limit !== undefined) queryParams.append("limit", params.limit.toString());
-  if (params?.is_active !== undefined) queryParams.append("is_active", params.is_active.toString());
+  if (params?.include_inactive !== undefined) queryParams.append("include_inactive", params.include_inactive.toString());
 
   const url = queryParams.toString() ? `/admin/plans?${queryParams.toString()}` : "/admin/plans";
   const res = await axiosInstance.get<{ plans: BackendPlan[]; pagination: { total: number; page: number; limit: number } }>(url);

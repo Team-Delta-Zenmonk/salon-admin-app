@@ -47,13 +47,13 @@ export const PlansPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(clearPlans());
-    dispatch(fetchSubscriptionPlans({ page: 1, limit: 10 }));
+    dispatch(fetchSubscriptionPlans({ page: 1, limit: 10, include_inactive: true }));
   }, [dispatch]);
 
   const loadNextPage = () => {
     if (isLoadingRef.current || !hasMoreRef.current) return;
     isLoadingRef.current = true;
-    dispatch(fetchSubscriptionPlans({ page: pageRef.current + 1, limit: 10 }));
+    dispatch(fetchSubscriptionPlans({ page: pageRef.current + 1, limit: 10, include_inactive: true }));
   };
 
   useEffect(() => {
