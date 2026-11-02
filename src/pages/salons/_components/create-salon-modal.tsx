@@ -35,9 +35,14 @@ import { showSnackbar } from "@/components/ui/snackbar";
 interface CreateSalonModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onClose }) => {
+export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+}) => {
   const dispatch = useAppDispatch();
   const { plans: allBackendPlans } = useAppSelector((state) => state.plans);
   const backendPlans = allBackendPlans.filter((p) => p.is_active !== false);
@@ -181,7 +186,11 @@ export const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onCl
         })
       ).unwrap();
 
-      dispatch(listSalonsAction({ page: 1, limit: 10, isAppend: false }));
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        dispatch(listSalonsAction({ page: 1, limit: 10, isAppend: false }));
+      }
       setIsSubmitting(false);
       handleClose(true);
       showSnackbar("Salon provisioned successfully");

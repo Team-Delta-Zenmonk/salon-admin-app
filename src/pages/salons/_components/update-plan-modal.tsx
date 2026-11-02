@@ -26,9 +26,15 @@ interface UpdatePlanModalProps {
   isOpen: boolean;
   onClose: () => void;
   salon: SalonItem | null;
+  onSuccess?: () => void;
 }
 
-export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClose, salon }) => {
+export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({
+  isOpen,
+  onClose,
+  salon,
+  onSuccess,
+}) => {
   const dispatch = useAppDispatch();
   const { plans: allBackendPlans, page, hasMore, isLoading: isLoadingPlans, isInitialLoading } = useAppSelector(
     (state) => state.plans
@@ -83,6 +89,7 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({ isOpen, onClos
           ? `Plan activated successfully! Invoice ${invoiceNum} generated.`
           : "Subscription plan updated and invoice generated successfully"
       );
+      onSuccess?.();
       onClose();
     } catch (err: any) {
       setError(typeof err === "string" ? err : "Failed to activate plan and generate invoice");

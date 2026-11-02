@@ -24,9 +24,15 @@ interface UpdateDurationModalProps {
   isOpen: boolean;
   onClose: () => void;
   salon: SalonItem | null;
+  onSuccess?: () => void;
 }
 
-export const UpdateDurationModal: React.FC<UpdateDurationModalProps> = ({ isOpen, onClose, salon }) => {
+export const UpdateDurationModal: React.FC<UpdateDurationModalProps> = ({
+  isOpen,
+  onClose,
+  salon,
+  onSuccess,
+}) => {
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +101,7 @@ export const UpdateDurationModal: React.FC<UpdateDurationModalProps> = ({ isOpen
           };
       await dispatch(extendSalonDurationAction({ uuid: salon.uuid, payload })).unwrap();
       showSnackbar(`${isPaidPlan ? "Subscription" : "Trial"} duration updated successfully`);
+      onSuccess?.();
       onClose();
     } catch (err: any) {
       setError(typeof err === "string" ? err : "Failed to update duration");

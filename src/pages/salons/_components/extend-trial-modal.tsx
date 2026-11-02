@@ -22,12 +22,14 @@ interface ExtendTrialModalProps {
   isOpen: boolean;
   onClose: () => void;
   salon: SalonItem | null;
+  onSuccess?: () => void;
 }
 
 export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
   isOpen,
   onClose,
   salon,
+  onSuccess,
 }) => {
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,6 +89,7 @@ export const ExtendTrialModal: React.FC<ExtendTrialModalProps> = ({
 
       setIsSubmitting(false);
       handleClose(true);
+      onSuccess?.();
       showSnackbar("Trial period extended successfully");
     } catch (err: any) {
       setError(typeof err === "string" ? err : "Failed to extend trial period");

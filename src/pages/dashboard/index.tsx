@@ -80,6 +80,14 @@ export const DashboardPage: React.FC = () => {
     dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
   };
 
+  const handleClearFiltersAndReload = () => {
+    hasUserTypedRef.current = false;
+    setSearchInput("");
+    setSelectedPlan("all");
+    setSelectedStatuses([]);
+    dispatch(listSalonsAction({ page: 1, limit: DEFAULT_PAGE_LIMIT, isAppend: false }));
+  };
+
   const handleRefresh = () => {
     const activeFilters = getFilterParams(selectedPlan, selectedStatuses, searchInput);
     dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
@@ -227,6 +235,7 @@ export const DashboardPage: React.FC = () => {
           setSelectedSalon(null);
         }}
         salon={selectedSalon}
+        onSuccess={handleClearFiltersAndReload}
       />
 
       <UpdatePlanModal
@@ -236,6 +245,7 @@ export const DashboardPage: React.FC = () => {
           setSelectedSalon(null);
         }}
         salon={selectedSalon}
+        onSuccess={handleClearFiltersAndReload}
       />
 
       <UpdateDurationModal
@@ -245,6 +255,7 @@ export const DashboardPage: React.FC = () => {
           setSelectedSalon(null);
         }}
         salon={selectedSalon}
+        onSuccess={handleClearFiltersAndReload}
       />
 
       <ToggleStatusModal
@@ -254,9 +265,14 @@ export const DashboardPage: React.FC = () => {
           setSelectedSalon(null);
         }}
         salon={selectedSalon}
+        onSuccess={handleClearFiltersAndReload}
       />
 
-      <CreateSalonModal isOpen={createModalOpen} onClose={() => setCreateModalOpen(false)} />
+      <CreateSalonModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSuccess={handleClearFiltersAndReload}
+      />
     </div>
   );
 };

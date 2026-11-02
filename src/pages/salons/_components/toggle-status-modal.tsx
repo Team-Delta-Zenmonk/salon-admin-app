@@ -14,12 +14,14 @@ interface ToggleStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
   salon: SalonItem | null;
+  onSuccess?: () => void;
 }
 
 export const ToggleStatusModal: React.FC<ToggleStatusModalProps> = ({
   isOpen,
   onClose,
   salon,
+  onSuccess,
 }) => {
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,6 +55,7 @@ export const ToggleStatusModal: React.FC<ToggleStatusModalProps> = ({
 
       setIsSubmitting(false);
       handleClose(true);
+      onSuccess?.();
       showSnackbar(
         willSuspend
           ? "Salon access suspended successfully"
