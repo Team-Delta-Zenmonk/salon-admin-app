@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const appName = import.meta.env.VITE_APP_NAME || "Veloura";
+const appName = import.meta.env.VITE_APP_NAME || "Salops";
 export const ADMIN_TOKEN_KEY = `${appName.toLowerCase()}_admin_token`;
 export const ADMIN_USER_KEY = `${appName.toLowerCase()}_admin_user`;
 

@@ -6,7 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const appName = env.VITE_APP_NAME || "Veloura";
+  const appName = env.VITE_APP_NAME || "Salops";
 
   return {
     plugins: [

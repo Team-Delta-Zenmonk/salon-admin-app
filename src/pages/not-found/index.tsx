@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
+  const appName = import.meta.env.VITE_APP_NAME || "Salops";
 
   const handleGoBack = () => {
     if (window.history.length > 1) {
@@ -18,11 +19,11 @@ export const NotFoundPage: React.FC = () => {
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 antialiased font-sans">
       <div className="w-full max-w-md text-center space-y-6">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-border/40 shadow-xs">
-            <img src="/management-icon.png" alt="Admin Logo" className="h-full w-full object-cover rounded-xl" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card border border-border/40 shadow-xs p-1">
+            <img src="/logo.svg" alt="Admin Logo" className="h-full w-full object-contain" />
           </div>
           <span className="text-xl font-bold tracking-tight text-foreground">
-            Veloura <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-bold text-primary border border-primary/20">OPS</span>
+            {appName} <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-bold text-primary border border-primary/20">OPS</span>
           </span>
         </div>
 
@@ -50,7 +51,7 @@ export const NotFoundPage: React.FC = () => {
             <p className="font-semibold text-foreground">Possible reasons:</p>
             <ul className="list-disc list-inside space-y-1">
               <li>The URL route was typed incorrectly</li>
-              <li>The resource was removed from Veloura OPS</li>
+              <li>The resource was removed from Salops OPS</li>
               <li>Your current administrative session may have expired</li>
             </ul>
           </div>
@@ -75,7 +76,7 @@ export const NotFoundPage: React.FC = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Need assistance? Contact <span className="text-foreground font-medium">Veloura Systems Admin</span>
+          Need assistance? Contact <span className="text-foreground font-medium">Salops Systems Admin</span>
         </p>
       </div>
     </div>

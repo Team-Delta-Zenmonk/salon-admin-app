@@ -21,7 +21,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const appName = import.meta.env.VITE_APP_NAME || "Veloura";
+  const appName = import.meta.env.VITE_APP_NAME || "Salops";
 
   const handleLogout = () => {
     dispatch(logout());
@@ -57,11 +57,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       >
         <div className="flex h-16 items-center justify-between border-b border-border px-4">
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 overflow-hidden shadow-sm border border-border/40">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card overflow-hidden shadow-sm border border-border/40 p-1">
               <img
-                src="/management-icon.png"
+                src="/logo.svg"
                 alt="Management Logo"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
               />
             </div>
             <div className="flex flex-col">
@@ -122,14 +122,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             >
               <Menu className="h-5 w-5" />
             </button>
-
-            <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">{appName} Cloud</span>
-              <span>/</span>
-              <span className="capitalize text-muted-foreground">
-                {location.pathname.replace("/", "") || "Dashboard"}
-              </span>
-            </div>
           </div>
 
           <div className="flex items-center gap-3">

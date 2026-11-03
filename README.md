@@ -85,7 +85,7 @@ APP_FORWARD_PORT=3003
 VITE_BACKEND_URL=http://localhost:8080
 VITE_STOREFRONT_DOMAIN=salon.com
 VITE_STOREFRONT_URL=http://localhost:3001
-VITE_APP_NAME=Veloura
+VITE_APP_NAME=Salops
 ```
 
 ---

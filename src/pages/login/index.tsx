@@ -14,7 +14,7 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.auth);
-  const appName = import.meta.env.VITE_APP_NAME || "Veloura";
+  const appName = import.meta.env.VITE_APP_NAME || "Salops";
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -53,8 +53,8 @@ export const LoginPage: React.FC = () => {
     <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-md mb-4">
-            <ShieldCheck className="h-8 w-8" />
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-card border border-border/50 shadow-md mb-4 p-2">
+            <img src="/logo.svg" alt={`${appName} Logo`} className="h-full w-full object-contain" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
             {appName} Cloud Console
