@@ -31,11 +31,21 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
     handleSubmit,
     reset,
     clearErrors,
+    watch,
     formState: { errors, isDirty },
   } = useForm<EditPlanForm>({
     resolver: zodResolver(getEditPlanSchema(planCode)) as unknown as Resolver<EditPlanForm>,
     mode: "onChange",
   });
+
+  const descriptionValue = watch("description") || "";
+
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(clearPlansError());
+      dispatch(clearPlansSuccessMessage());
+    }
+  }, [isOpen, dispatch]);
 
   useEffect(() => {
     if (isOpen && plan) {
@@ -110,7 +120,7 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
 
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1">Plan Name</label>
-          <Input {...register("name")} placeholder="e.g. Monthly Plan" />
+          <Input {...register("name")} maxLength={255} placeholder="e.g. Monthly Plan" />
           {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name.message}</p>}
         </div>
 
@@ -137,6 +147,8 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
           </label>
           <Input
             type="number"
+            min={1}
+            max={365}
             {...register("duration_days")}
             placeholder="e.g. 14, 30, 90, 365"
           />
@@ -147,19 +159,35 @@ export const EditPlanModal: React.FC<EditPlanModalProps> = ({ isOpen, onClose, p
 
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1">Billing Cycle Tag (Optional)</label>
-          <Input {...register("billing_cycle")} placeholder="e.g. / mo, / yr, trial" />
+          <Input {...register("billing_cycle")} maxLength={50} placeholder="e.g. / mo, / yr, trial" />
           {errors.billing_cycle && <p className="mt-1 text-xs text-destructive">{errors.billing_cycle.message}</p>}
         </div>
 
 
         <div>
-          <label className="block text-xs font-semibold text-foreground mb-1">Description (Optional)</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-semibold text-foreground">Description (Optional)</label>
+            <span
+              className={`text-[11px] ${
+                descriptionValue.length > 300
+                  ? "text-destructive font-medium"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {descriptionValue.length} / 300
+            </span>
+          </div>
           <textarea
             {...register("description")}
+            maxLength={300}
             rows={3}
             style={{ scrollbarWidth: "none" }}
-            className="no-scrollbar block w-full resize-none rounded-lg border border-border bg-input-bg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="Enter plan description..."
+            className={`no-scrollbar block w-full resize-none rounded-lg border bg-input-bg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:outline-none focus:ring-2 ${
+              errors.description
+                ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                : "border-border focus:border-primary focus:ring-primary/20"
+            }`}
+            placeholder="Enter plan description (max 300 characters)..."
           />
           {errors.description && <p className="mt-1 text-xs text-destructive">{errors.description.message}</p>}
         </div>

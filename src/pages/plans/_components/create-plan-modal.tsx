@@ -49,6 +49,14 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
   });
 
   const nameValue = watch("name");
+  const descriptionValue = watch("description") || "";
+
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(clearPlansError());
+      dispatch(clearPlansSuccessMessage());
+    }
+  }, [isOpen, dispatch]);
 
   useEffect(() => {
     if (isCodeModified) return;
@@ -131,6 +139,7 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
           </label>
           <Input
             {...register("name")}
+            maxLength={255}
             placeholder="e.g. Quarterly Pro"
           />
           {errors.name && (
@@ -153,6 +162,7 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
                 }
               },
             })}
+            maxLength={50}
             placeholder="e.g. quarterly_pro"
           />
           {errors.code ? (
@@ -190,6 +200,8 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
           </label>
           <Input
             type="number"
+            min={1}
+            max={365}
             {...register("duration_days")}
             placeholder="e.g. 14, 30, 90, 365"
           />
@@ -204,8 +216,12 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
           </label>
           <Input
             {...register("billing_cycle")}
+            maxLength={50}
             placeholder="e.g. / quarter, / 6 months"
           />
+          {errors.billing_cycle && (
+            <p className="mt-1 text-xs text-destructive">{errors.billing_cycle.message}</p>
+          )}
         </div>
 
         <div>
@@ -214,20 +230,45 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
           </label>
           <Input
             {...register("badge")}
+            maxLength={50}
             placeholder="e.g. Best Value, Popular, Special Offer"
           />
+          {errors.badge && (
+            <p className="mt-1 text-xs text-destructive">{errors.badge.message}</p>
+          )}
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-foreground mb-1">
-            Description (Optional)
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-semibold text-foreground">
+              Description (Optional)
+            </label>
+            <span
+              className={`text-[11px] ${
+                descriptionValue.length > 300
+                  ? "text-destructive font-medium"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {descriptionValue.length} / 300
+            </span>
+          </div>
           <textarea
             {...register("description")}
+            maxLength={300}
             rows={3}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            placeholder="Enter plan description..."
+            className={`w-full rounded-lg border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+              errors.description
+                ? "border-destructive focus-visible:ring-destructive"
+                : "border-input focus-visible:ring-ring"
+            }`}
+            placeholder="Enter plan description (max 300 characters)..."
           />
+          {errors.description && (
+            <p className="mt-1 text-xs text-destructive">
+              {errors.description.message}
+            </p>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-3 border-t border-border">

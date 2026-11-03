@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -24,6 +24,13 @@ export const DeletePlanModal: React.FC<DeletePlanModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isBusy = isLoading || isSubmitting;
+
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(clearPlansError());
+      dispatch(clearPlansSuccessMessage());
+    }
+  }, [isOpen, dispatch]);
 
   const handleClose = (force = false) => {
     if (isBusy && !force) return;

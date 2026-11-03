@@ -97,7 +97,7 @@ export const PlanSelect: React.FC<PlanSelectProps> = ({
       price:
         p.formatted_price === "Free"
           ? "Free"
-          : `${p.formatted_price} ${durationLabel}`.trim(),
+          : `${p.formatted_price} / ${durationLabel}`.trim(),
       description: p.description,
       icon: iconMap[p.code || String(p.id)] || <Zap className="h-4 w-4 text-primary" />,
     };

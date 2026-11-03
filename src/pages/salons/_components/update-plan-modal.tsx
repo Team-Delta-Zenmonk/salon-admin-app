@@ -99,7 +99,7 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({
   const planTiers = backendPlans.map((p) => {
     const durationLabel =
       p.duration_days != null
-        ? `${p.duration_days} ${p.duration_days === 1 ? "Day" : "Days"}`
+        ? `/ ${p.duration_days} ${p.duration_days === 1 ? "Day" : "Days"}`
         : (p.billing_cycle || "");
 
     return {
