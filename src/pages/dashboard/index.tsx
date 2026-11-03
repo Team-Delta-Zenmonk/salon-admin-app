@@ -80,12 +80,13 @@ export const DashboardPage: React.FC = () => {
     dispatch(listSalonsAction({ ...activeFilters, page: 1, isAppend: false }));
   };
 
-  const handleClearFiltersAndReload = () => {
+  const handleClearFiltersAndReload = (targetPage?: number) => {
     hasUserTypedRef.current = false;
     setSearchInput("");
     setSelectedPlan("all");
     setSelectedStatuses([]);
-    dispatch(listSalonsAction({ page: 1, limit: DEFAULT_PAGE_LIMIT, isAppend: false }));
+    const pageToFetch = typeof targetPage === "number" ? targetPage : page;
+    dispatch(listSalonsAction({ page: Math.max(1, pageToFetch), limit: DEFAULT_PAGE_LIMIT, isAppend: false }));
   };
 
   const handleRefresh = () => {
@@ -235,7 +236,7 @@ export const DashboardPage: React.FC = () => {
           setSelectedSalon(null);
         }}
         salon={selectedSalon}
-        onSuccess={handleClearFiltersAndReload}
+        onSuccess={() => handleClearFiltersAndReload(page)}
       />
 
       <UpdatePlanModal
@@ -245,7 +246,7 @@ export const DashboardPage: React.FC = () => {
           setSelectedSalon(null);
         }}
         salon={selectedSalon}
-        onSuccess={handleClearFiltersAndReload}
+        onSuccess={() => handleClearFiltersAndReload(page)}
       />
 
       <UpdateDurationModal
@@ -255,7 +256,7 @@ export const DashboardPage: React.FC = () => {
           setSelectedSalon(null);
         }}
         salon={selectedSalon}
-        onSuccess={handleClearFiltersAndReload}
+        onSuccess={() => handleClearFiltersAndReload(page)}
       />
 
       <ToggleStatusModal
@@ -265,13 +266,13 @@ export const DashboardPage: React.FC = () => {
           setSelectedSalon(null);
         }}
         salon={selectedSalon}
-        onSuccess={handleClearFiltersAndReload}
+        onSuccess={() => handleClearFiltersAndReload(page)}
       />
 
       <CreateSalonModal
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        onSuccess={handleClearFiltersAndReload}
+        onSuccess={() => handleClearFiltersAndReload(1)}
       />
     </div>
   );
