@@ -120,6 +120,7 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                   targetDate,
                   countdown,
                   isSuspended,
+                  isTrial,
                   hasCombinedExpiry,
                   trialEndsAt,
                 } = getSalonExpiryCountdown(salon);
@@ -191,7 +192,7 @@ export const SalonsTable: React.FC<SalonsTableProps> = ({
                             {countdown.text}
                           </span>
                           <div className="text-[10px] text-muted-foreground">
-                            Plan: {formatDate(targetDate)}
+                            {isTrial ? "Trial: " : "Plan: "}{formatDate(targetDate)}
                           </div>
                           {hasCombinedExpiry && trialEndsAt && (
                             <div className="text-[9px] text-muted-foreground/80 mt-0.5 font-mono">

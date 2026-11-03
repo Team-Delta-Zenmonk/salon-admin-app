@@ -33,6 +33,7 @@ export const SalonCard: React.FC<SalonCardProps> = ({
     targetDate,
     countdown,
     isSuspended,
+    isTrial,
     hasCombinedExpiry,
     trialEndsAt,
   } = getSalonExpiryCountdown(salon);
@@ -118,7 +119,7 @@ export const SalonCard: React.FC<SalonCardProps> = ({
                 {countdown.text}
               </p>
               <p className="text-[10px] text-muted-foreground">
-                Plan: {formatDate(targetDate)}
+                {isTrial ? "Trial: " : "Plan: "}{formatDate(targetDate)}
               </p>
               {hasCombinedExpiry && trialEndsAt && (
                 <p className="text-[9px] text-muted-foreground/80 mt-0.5 font-mono">

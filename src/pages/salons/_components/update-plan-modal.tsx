@@ -59,14 +59,10 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({
 
   useEffect(() => {
     if (isOpen && salon) {
-      const defaultPlan =
-        salon.subscription_plan && salon.subscription_plan !== SUBSCRIPTION_PLAN.TRIAL
-          ? salon.subscription_plan
-          : backendPlans[0]?.uuid || "";
-      reset({ selectedPlan: defaultPlan });
+      reset({ selectedPlan: "" });
       setError(null);
     }
-  }, [isOpen, salon?.uuid, salon?.subscription_plan, backendPlans.length, reset]);
+  }, [isOpen, salon?.uuid, reset]);
 
   const loadMorePlans = useCallback(() => {
     if (isLoadingPlans || !hasMore) return;
@@ -127,9 +123,15 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({
     salon.subscription_expires_at &&
     new Date(salon.subscription_expires_at) > new Date();
 
+  const isTrialActive =
+    salon.trial_ends_at &&
+    new Date(salon.trial_ends_at) > new Date();
+
   const baseDate = isCurrentlyActive
     ? new Date(salon.subscription_expires_at!)
-    : new Date();
+    : isTrialActive
+      ? new Date(salon.trial_ends_at!)
+      : new Date();
 
   const durationDaysToAdd = activeSelectedPlan?.duration_days || 30;
   const projectedExpiry = dayjs(baseDate).add(durationDaysToAdd, "day").toDate();
@@ -156,7 +158,9 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({
             <span className="font-mono font-medium text-foreground">
               {isCurrentlyActive
                 ? `Current Expiry (${formatDate(salon.subscription_expires_at)})`
-                : "Today (Immediate)"}
+                : isTrialActive
+                  ? `Trial Expiry (${formatDate(salon.trial_ends_at)})`
+                  : "Today (Immediate)"}
             </span>
           </div>
           {activeSelectedPlan && (

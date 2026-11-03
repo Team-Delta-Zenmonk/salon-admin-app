@@ -14,10 +14,10 @@ export const getSalonStatusBadgeVariant = (salon: SalonItem): BadgeProps["varian
 };
 
 export const getSalonExpiryCountdown = (salon: SalonItem) => {
-  const isPaid = salon.subscription_plan && salon.subscription_plan !== "trial";
-  const targetDate = isPaid
-    ? salon.subscription_expires_at || salon.trial_ends_at
-    : salon.trial_ends_at || salon.subscription_expires_at;
+  const isTrial = salon.subscription_plan === "trial" || salon.subscription_status === "trial";
+  const targetDate = isTrial
+    ? salon.trial_ends_at || salon.subscription_expires_at
+    : salon.subscription_expires_at || salon.trial_ends_at;
 
   const countdown = getDaysRemaining(targetDate);
   const isSuspended = isSalonSuspended(salon);
@@ -26,9 +26,10 @@ export const getSalonExpiryCountdown = (salon: SalonItem) => {
     targetDate,
     countdown,
     isSuspended,
+    isTrial,
     trialEndsAt: salon.trial_ends_at,
     planExpiresAt: salon.subscription_expires_at,
-    hasCombinedExpiry: Boolean(isPaid && salon.trial_ends_at && salon.subscription_expires_at),
+    hasCombinedExpiry: Boolean(!isTrial && salon.trial_ends_at && salon.subscription_expires_at),
   };
 };
 
