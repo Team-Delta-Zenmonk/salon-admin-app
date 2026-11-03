@@ -36,7 +36,7 @@ export const SalonActions: React.FC<SalonActionsProps> = ({
             variant="secondary"
             size={size}
             className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
-            title="Extend Trial"
+            aria-label="Extend Trial"
             onClick={() => onExtendTrial(salon)}
           >
             <Calendar className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400 shrink-0" />
@@ -47,7 +47,7 @@ export const SalonActions: React.FC<SalonActionsProps> = ({
             variant="secondary"
             size={size}
             className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
-            title="Update Subscription Plan"
+            aria-label="Update Subscription Plan"
             onClick={() => onUpdatePlan(salon)}
           >
             <Zap className="h-2.5 w-2.5 text-primary shrink-0" />
@@ -58,7 +58,7 @@ export const SalonActions: React.FC<SalonActionsProps> = ({
             variant="secondary"
             size={size}
             className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
-            title="Update Subscription Duration"
+            aria-label="Update Subscription Duration"
             onClick={() => onUpdateDuration(salon)}
           >
             <Clock className="h-2.5 w-2.5 text-primary shrink-0" />
@@ -72,7 +72,7 @@ export const SalonActions: React.FC<SalonActionsProps> = ({
         variant={isSuspended ? "default" : "outline"}
         size={size}
         className="inline-flex items-center justify-start gap-1 text-[11px] px-2 font-medium shrink-0 w-auto"
-        title={isSuspended ? "Reactivate Salon" : "Suspend Salon"}
+        aria-label={isSuspended ? "Reactivate Salon" : "Suspend Salon"}
         onClick={() => onToggleStatus(salon)}
       >
         {isSuspended ? (

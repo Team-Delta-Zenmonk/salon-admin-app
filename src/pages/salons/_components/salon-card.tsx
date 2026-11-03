@@ -57,7 +57,7 @@ export const SalonCard: React.FC<SalonCardProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary shrink-0 transition-colors"
-              title="Visit Public Storefront"
+              aria-label="Visit Public Storefront"
             >
               <ExternalLink className="h-3 w-3" />
             </a>

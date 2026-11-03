@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -22,21 +22,25 @@ export const Tooltip: React.FC<TooltipProps> = ({
   delay = 100,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [isPositioned, setIsPositioned] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: -9999, left: -9999 });
   const triggerRef = useRef<HTMLSpanElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const updatePosition = useCallback(() => {
-    if (!triggerRef.current) return;
+  const calculatePosition = useCallback(() => {
+    if (!triggerRef.current) return null;
     const rect = triggerRef.current.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0 && rect.top === 0 && rect.left === 0) {
+      return null;
+    }
+
     const tooltipEl = tooltipRef.current;
-    const tooltipWidth = tooltipEl ? tooltipEl.offsetWidth : 120;
-    const tooltipHeight = tooltipEl ? tooltipEl.offsetHeight : 28;
+    const tooltipWidth = tooltipEl && tooltipEl.offsetWidth > 0 ? tooltipEl.offsetWidth : 120;
+    const tooltipHeight = tooltipEl && tooltipEl.offsetHeight > 0 ? tooltipEl.offsetHeight : 28;
 
     let top = 0;
     let left = 0;
-
     const padding = 8;
 
     if (side === "top") {
@@ -72,13 +76,25 @@ export const Tooltip: React.FC<TooltipProps> = ({
     left = Math.max(padding, Math.min(left, window.innerWidth - tooltipWidth - padding));
     top = Math.max(padding, Math.min(top, window.innerHeight - tooltipHeight - padding));
 
-    setCoords({ top, left });
+    return { top, left };
   }, [side]);
+
+  const updatePosition = useCallback(() => {
+    const newCoords = calculatePosition();
+    if (newCoords) {
+      setCoords(newCoords);
+      setIsPositioned(true);
+    }
+  }, [calculatePosition]);
 
   const showTooltip = () => {
     if (disabled || !content) return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
+      const initialCoords = calculatePosition();
+      if (initialCoords) {
+        setCoords(initialCoords);
+      }
       setIsVisible(true);
     }, delay);
   };
@@ -86,7 +102,14 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const hideTooltip = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsVisible(false);
+    setIsPositioned(false);
   };
+
+  useEffect(() => {
+    if (disabled) {
+      hideTooltip();
+    }
+  }, [disabled]);
 
   useEffect(() => {
     return () => {
@@ -94,7 +117,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isVisible) {
       updatePosition();
       const handleScrollOrResize = () => updatePosition();
@@ -104,6 +127,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
         window.removeEventListener("scroll", handleScrollOrResize, true);
         window.removeEventListener("resize", handleScrollOrResize);
       };
+    } else {
+      setIsPositioned(false);
     }
   }, [isVisible, updatePosition]);
 
@@ -129,10 +154,12 @@ export const Tooltip: React.FC<TooltipProps> = ({
               position: "fixed",
               top: `${coords.top}px`,
               left: `${coords.left}px`,
+              visibility: isPositioned ? "visible" : "hidden",
             }}
             role="tooltip"
             className={cn(
-              "z-[9999] pointer-events-none max-w-xs break-all sm:break-words [overflow-wrap:anywhere] rounded-lg border border-border bg-popover px-2.5 py-1 text-xs text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95",
+              "z-[9999] pointer-events-none max-w-xs break-all sm:break-words [overflow-wrap:anywhere] rounded-lg border border-border bg-popover px-2.5 py-1 text-xs text-popover-foreground shadow-lg",
+              isPositioned && "animate-in fade-in-0 zoom-in-95",
               className
             )}
           >
